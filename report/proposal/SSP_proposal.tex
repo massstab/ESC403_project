@@ -2,6 +2,7 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{hyperref} % Links
 \usepackage{csquotes}   % When using babel or polyglossia with biblatex, loading csquotes is recommended to ensure that quoted texts are typeset according to the rules of your main language.
 \usepackage[
 backend=biber,
@@ -10,17 +11,18 @@ citestyle=phys  %This is the style of the citations.
 ]{biblatex}
 \addbibresource{references.bib}
 
-\title{Proposal SSP}
+\title{Accident Analysis in Zurich\\
+\large Research Proposal Final Project\\
+ESC403 Introduction to Data Science}
 \author{Marcelo Looser, Dave Linder, Yves Bicker} 
 
 \begin{document}
 \maketitle
 
-\section{Answers to questions}
+\noindent
+We want to analyze what circumstances lead to accidents in Zurich and if we can project a heat map displaying the probability of high risk areas by means of finding what features are the most important to predict accidents.
 
-\subsection{What is the general topic?}
-We want to analyze what circumstances lead to accidents in Zurich and if we can project a heat map displaying the probability of high risk areas in the future.   
-\subsection{What questions will you try to answer with the project?}
+\section*{What questions will you try to answer with the project?}
 \begin{itemize}
     \item Correlation, causation?\vspace{0.2cm}\\
      Performing statistical inference on the given data set will be used to get a grasp why certain accidents occurred (the causes might be very trivial). Once these are established, preventative measures will be proposed if there are any. 
@@ -32,11 +34,47 @@ We want to analyze what circumstances lead to accidents in Zurich and if we can 
     If by chance certain correlations arise that clearly do not imply causation, it will surely be exploited for comedic relief.  
 \end{itemize}
 
-\subsection{What data will you be using (and what is the source of that data)?}
-We will use the road accident data of Zurich, the corresponding weather data and the Geo data catalogue. (road condition data? exist?)
+\section*{What data will you be using (and what is the source of that data)?}
+We will use the road accident data of Zurich, the corresponding weather data and the Geo data catalogue, and road condition data if there is any available.
 
-\subsection{How will data be processed?}
-Once the data has been cleaned and checked for any anomalies, classification will be used to classify the accident cause. Further 
+\subsection*{Links}
+Here are links to our data sources:
+\begin{itemize}
+    \item \href{https://opendata.swiss/de/dataset/polizeilich-registrierte-verkehrsunfalle-auf-dem-stadtgebiet-zurich-seit-2011/resource/3bf3f12a-bf09-4e69-8cde-0df9e268d54b}{Accidents - Data set}
+    \item \href{https://maps.zh.ch/}{Geodata catalog}
+    \item \href{https://data.stadt-zuerich.ch/dataset/ugz_meteodaten_stundenmittelwerte}{Meteodata}
+\end{itemize}
 
-\subsection{What analysis techniques or algorithms are planned to be used?}
+\section*{How will data be processed?}
+Once the data has been cleaned and checked for any anomalies, exploratory data analysis will be used to search for trends and features with the most influence. Afterwards, as mentioned above, we will use inferential as well as predictive analysis. 
+
+\section*{What analysis techniques or algorithms are planned to be used?}
+We want to use a clustering algorithm like PCA, or if this isn't fruitful sensitivity analysis, to determine the significance of the features used. Once the most significant features are determined, linear regression or some other interpolation techniques like spline interpolation or radial kernel interpolation or possibly nearest neighbour interpolation will be used to see the relationships between the features and the data points, either in 2 dimensions or higher depending on the data. Afterwards we will try to estimate a probability density function in dependence of the most influential features to get a heat map of the high risk areas where accident occurrences is most probable. This might be done through a small neural network or with more basic tools.
+
+\section*{Snippets of the features in the corresponding data sets:}
+\begin{itemize}
+    \item Accidents - Data set\vspace{0.2cm}
+    \begin{itemize}
+        \item Accident type
+        \item Accident severity category
+        \item Vehicles and pedestrians involved
+        \item Road type
+        \item etc.
+    \end{itemize}
+    \item Geodata catalog\vspace{0.2cm}    \begin{itemize}
+        \item Street noise level
+        \item Heat load on streets and vicinity
+        \item Urbanisation
+        \item etc.
+    \end{itemize}
+    \item Meteodata\vspace{0.2cm}
+    \begin{itemize}
+        \item Temperature
+        \item Air velocity and orientation
+        \item Rain duration
+        \item CO concentration
+        \item etc.
+    \end{itemize}
+This features may or may not be used.
+\end{itemize}
 \end{document}

@@ -50,15 +50,18 @@ def to_int(data, feature_list, m, k):
     """
 
     integerfy = lambda lst, i: [int(item[i:]) for item in  lst]
+    print(data[['AccidentYear','AccidentMonth', 'AccidentMonth_de']])
+    print(data['AccidentYear']/10)
     data_arr = data[feature_list[m]].to_numpy()
     temp = integerfy(data_arr, k)
     data[feature_list[m]] = temp # make str of form "at" + "number" to integers number
 
 
-# to_int(data_accident, features_accident, 1, 2)
+to_int(data_accident, features_accident, 1, 2)
+
 # to_int(data_accident, features_accident, 3, 2)
 
-print(data_accident[features_accident[8:10]])
+# print(data_accident[features_accident[8:10]])
 # data_tidy =
 
 

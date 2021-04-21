@@ -25,3 +25,10 @@
 3: Minor road
 4: Motorway side installation
 9: Other
+
+<h4>AccidentLocation_CHLV95_E/N</h4>
+[Schweizer Landeskoordinaten LV95](https://www.zh.ch/de/planen-bauen/geoinformation/geodaten/koordinatensystem.html)
+First digit stands for east(2) and north(1).
+Reference point for coordinates:
+E (Ost) 	2'683'256.46 m 	 
+N (Nord) 	1'248'117.48 m 	 

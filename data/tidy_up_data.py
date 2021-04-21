@@ -27,11 +27,11 @@ features_original_accident = ['AccidentUID', 'AccidentType', 'AccidentType_de',
                      'AccidentWeekDay_fr', 'AccidentWeekDay_it', 'AccidentWeekDay_en',
                      'AccidentHour', 'AccidentHour_text']
 
-features_croped_accident = ['AccidentType',
+features_croped_accident = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
+                            'AccidentHour', 'AccidentType',
                             'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                             'AccidentInvolvingMotorcycle', 'RoadType', 'AccidentLocation_CHLV95_E',
-                            'AccidentLocation_CHLV95_N', 'AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
-                            'AccidentHour']
+                            'AccidentLocation_CHLV95_N']
 
 features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
                   'Wert', 'Status']
@@ -64,6 +64,29 @@ def to_int(data, feature_list, m, k):
     temp = integerfy(data_arr, k)
     data[feature_list[m]] = temp  # make str of form "str" + "number" to number
 
+def meteo_date_prep(df):
+    """
+    Brings the meteo raw data in the right format and computes the average temperature from the two measuring stations
+    :param df: raw meteo dataframe
+    :return: the new meteo dataframe
+    """
+    new_df = pd.DataFrame(columns=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour', 'AvgTemperature'])
+    i = 0
+    for row in df[['Datum', 'Standort', 'Parameter', 'Wert']].values:
+        if row[2] == 'T':
+            if row[1] == "Zch_Schimmelstrasse":
+                summand = row[3]
+                year, month, day, hour = row[0][:4], row[0][5:7], row[0][8:10], row[0][11:13]
+                date = pd.to_datetime(year + "-" + month + "-" + day + "-" + hour)
+                weekday = date.weekday() + 1  # 1,...,7 Monday,...,Sunday
+                new_df.at[i, 'AccidentYear'] = year
+                new_df.at[i, 'AccidentMonth'] = month
+                new_df.at[i, 'AccidentWeekDay'] = weekday
+                new_df.at[i, 'AccidentHour'] = hour
+            else:
+                new_df.at[i, 'AvgTemperature'] = 0.5 * (row[3] + summand)
+                i += 1
+    return new_df
 
 # =============================================================================
 # Perform cleaning
@@ -71,6 +94,7 @@ def to_int(data, feature_list, m, k):
 # clean accident data
 data_accident_cleaned = data_accident[features_croped_accident].copy()  # complete new df with only used features
 nan_index = data_accident_cleaned[data_accident_cleaned.isin([np.nan, np.inf, -np.inf]).any(1)].index  # get indices from nan values
+
 data_accident_cleaned.drop(nan_index, inplace=True)  # drop nan values
 data_accident_cleaned[features_original_accident[11:14]] = data_accident_cleaned[features_original_accident[11:14]].astype(int)  # Changing bool to int
 data_accident_cleaned[features_original_accident[34]] = data_accident_cleaned[features_original_accident[34]].astype(int)  # change weekday to int
@@ -78,6 +102,12 @@ to_int(data_accident_cleaned, features_original_accident, 1, 2)  # type
 to_int(data_accident_cleaned, features_original_accident, 6, 2)  # severity
 to_int(data_accident_cleaned, features_original_accident, 14, 4)  # road type
 to_int(data_accident_cleaned, features_original_accident, 29, 3)  # week day
+
+# clean meteo data
+# data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
+# data_meteo_cleaned.to_pickle("tidy/temp_meteo.pickle")  # Save the df for faster load
+data_accident_cleaned = pd.read_pickle("tidy/temp_meteo.pickle")  # Load the meteo df
+
 
 data_accident_cleaned.to_csv("tidy/RoadTrafficAccidentLocations_cleaned.csv")
 # =============================================================================

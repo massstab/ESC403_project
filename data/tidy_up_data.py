@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Apr 15 16:30:42 2021
-@author: marszpd
+@author: marszpd, dtm
 """
 
 import pandas as pd
@@ -35,6 +35,10 @@ features_croped_accident = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
 
 features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
                   'Wert', 'Status']
+
+# Don't change this list because it is used by the
+features_croped_meteo = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour', 'AvgTemperature']
+
 # =============================================================================
 # Tidy data functions
 # =============================================================================
@@ -79,13 +83,13 @@ def meteo_date_prep(df):
                 year, month, day, hour = row[0][:4], row[0][5:7], row[0][8:10], row[0][11:13]
                 date = pd.to_datetime(year + "-" + month + "-" + day + "-" + hour)
                 weekday = date.weekday() + 1  # 1,...,7 Monday,...,Sunday
-                new_df.at[i, 'AccidentYear'] = year
-                new_df.at[i, 'AccidentMonth'] = month
-                new_df.at[i, 'AccidentWeekDay'] = weekday
-                new_df.at[i, 'AccidentHour'] = hour
+                new_df.at[i, 'AccidentYear'] = int(year)
+                new_df.at[i, 'AccidentMonth'] = int(month)
+                new_df.at[i, 'AccidentWeekDay'] = int(weekday)  # Couldń't exctract which day of the month that is...
+                new_df.at[i, 'AccidentHour'] = int(hour)
             else:
-                new_df.at[i, 'AvgTemperature'] = 0.5 * (row[3] + summand)
-                i += 1
+                new_df.at[i, 'AvgTemperature'] = round(0.5 * (row[3] + summand), 1)
+                i += 1  # Update index for the next entry in new_df
     return new_df
 
 # =============================================================================
@@ -103,11 +107,18 @@ to_int(data_accident_cleaned, features_original_accident, 6, 2)  # severity
 to_int(data_accident_cleaned, features_original_accident, 14, 4)  # road type
 to_int(data_accident_cleaned, features_original_accident, 29, 3)  # week day
 
+data_accident_cleaned.to_csv("tidy/RoadTrafficAccidentLocations_cleaned.csv")
+
+
 # clean meteo data
 # data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
 # data_meteo_cleaned.to_pickle("tidy/temp_meteo.pickle")  # Save the df for faster load
-data_accident_cleaned = pd.read_pickle("tidy/temp_meteo.pickle")  # Load the meteo df
+data_meteo_cleaned = pd.read_pickle("tidy/temp_meteo.pickle")  # Load the meteo df
+
+data_meteo_cleaned.to_csv("tidy/ugz_ogd_meteo_h1_2011_cleaned.csv")
+
+# merge dataframes
+data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', on=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'])
 
 
-data_accident_cleaned.to_csv("tidy/RoadTrafficAccidentLocations_cleaned.csv")
 # =============================================================================

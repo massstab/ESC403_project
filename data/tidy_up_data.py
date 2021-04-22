@@ -119,38 +119,38 @@ features_croped_meteo = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'Ac
 
 # =============================================================================
 # clean meteo data
-data_meteo_cleaned11 = meteo_date_prep(data_meteo11)  # Create new df with temperature
-data_meteo_cleaned12 = meteo_date_prep(data_meteo12)  # Create new df with temperature
-data_meteo_cleaned13 = meteo_date_prep(data_meteo13)  # Create new df with temperature
+# data_meteo_cleaned11 = meteo_date_prep(data_meteo11)  # Create new df with temperature
+# data_meteo_cleaned12 = meteo_date_prep(data_meteo12)  # Create new df with temperature
+# data_meteo_cleaned13 = meteo_date_prep(data_meteo13)  # Create new df with temperature
 data_meteo_cleaned14 = meteo_date_prep(data_meteo14)  # Create new df with temperature
-data_meteo_cleaned15 = meteo_date_prep(data_meteo15)  # Create new df with temperature
-data_meteo_cleaned16 = meteo_date_prep(data_meteo16)  # Create new df with temperature
-data_meteo_cleaned17 = meteo_date_prep(data_meteo17)  # Create new df with temperature
-data_meteo_cleaned18 = meteo_date_prep(data_meteo18)  # Create new df with temperature
-data_meteo_cleaned19 = meteo_date_prep(data_meteo19)  # Create new df with temperature
-data_meteo_cleaned20 = meteo_date_prep(data_meteo20)  # Create new df with temperature
+# data_meteo_cleaned15 = meteo_date_prep(data_meteo15)  # Create new df with temperature
+# data_meteo_cleaned16 = meteo_date_prep(data_meteo16)  # Create new df with temperature
+# data_meteo_cleaned17 = meteo_date_prep(data_meteo17)  # Create new df with temperature
+# data_meteo_cleaned18 = meteo_date_prep(data_meteo18)  # Create new df with temperature
+# data_meteo_cleaned19 = meteo_date_prep(data_meteo19)  # Create new df with temperature
+# data_meteo_cleaned20 = meteo_date_prep(data_meteo20)  # Create new df with temperature
 
-data_meteo_cleaned11 = pd.read_pickle("tidy/temp_meteo11.pickle")  # Load the meteo df
-data_meteo_cleaned12 = pd.read_pickle("tidy/temp_meteo12.pickle")  # Load the meteo df
-data_meteo_cleaned13 = pd.read_pickle("tidy/temp_meteo13.pickle")  # Load the meteo df
-data_meteo_cleaned14 = pd.read_pickle("tidy/temp_meteo14.pickle")  # Load the meteo df
-data_meteo_cleaned15 = pd.read_pickle("tidy/temp_meteo15.pickle")  # Load the meteo df
-data_meteo_cleaned16 = pd.read_pickle("tidy/temp_meteo16.pickle")  # Load the meteo df
-data_meteo_cleaned17 = pd.read_pickle("tidy/temp_meteo17.pickle")  # Load the meteo df
-data_meteo_cleaned18 = pd.read_pickle("tidy/temp_meteo18.pickle")  # Load the meteo df
-data_meteo_cleaned19 = pd.read_pickle("tidy/temp_meteo19.pickle")  # Load the meteo df
-data_meteo_cleaned20 = pd.read_pickle("tidy/temp_meteo20.pickle")  # Load the meteo df
-
-data_meteo_cleaned11.to_csv("tidy/ugz_ogd_meteo_h1_2011_cleaned.csv")
-data_meteo_cleaned12.to_csv("tidy/ugz_ogd_meteo_h1_2012_cleaned.csv")
-data_meteo_cleaned13.to_csv("tidy/ugz_ogd_meteo_h1_2013_cleaned.csv")
-data_meteo_cleaned14.to_csv("tidy/ugz_ogd_meteo_h1_2014_cleaned.csv")
-data_meteo_cleaned15.to_csv("tidy/ugz_ogd_meteo_h1_2015_cleaned.csv")
-data_meteo_cleaned16.to_csv("tidy/ugz_ogd_meteo_h1_2016_cleaned.csv")
-data_meteo_cleaned17.to_csv("tidy/ugz_ogd_meteo_h1_2017_cleaned.csv")
-data_meteo_cleaned18.to_csv("tidy/ugz_ogd_meteo_h1_2018_cleaned.csv")
-data_meteo_cleaned19.to_csv("tidy/ugz_ogd_meteo_h1_2019_cleaned.csv")
-data_meteo_cleaned20.to_csv("tidy/ugz_ogd_meteo_h1_2020_cleaned.csv")
+# data_meteo_cleaned11 = pd.read_pickle("tidy/temp_meteo11.pickle")  # Load the meteo df
+# data_meteo_cleaned12 = pd.read_pickle("tidy/temp_meteo12.pickle")  # Load the meteo df
+# data_meteo_cleaned13 = pd.read_pickle("tidy/temp_meteo13.pickle")  # Load the meteo df
+# data_meteo_cleaned14 = pd.read_pickle("tidy/temp_meteo14.pickle")  # Load the meteo df
+# data_meteo_cleaned15 = pd.read_pickle("tidy/temp_meteo15.pickle")  # Load the meteo df
+# data_meteo_cleaned16 = pd.read_pickle("tidy/temp_meteo16.pickle")  # Load the meteo df
+# data_meteo_cleaned17 = pd.read_pickle("tidy/temp_meteo17.pickle")  # Load the meteo df
+# data_meteo_cleaned18 = pd.read_pickle("tidy/temp_meteo18.pickle")  # Load the meteo df
+# data_meteo_cleaned19 = pd.read_pickle("tidy/temp_meteo19.pickle")  # Load the meteo df
+# data_meteo_cleaned20 = pd.read_pickle("tidy/temp_meteo20.pickle")  # Load the meteo df
+#
+# data_meteo_cleaned11.to_csv("tidy/ugz_ogd_meteo_h1_2011_cleaned.csv")
+# data_meteo_cleaned12.to_csv("tidy/ugz_ogd_meteo_h1_2012_cleaned.csv")
+# data_meteo_cleaned13.to_csv("tidy/ugz_ogd_meteo_h1_2013_cleaned.csv")
+# data_meteo_cleaned14.to_csv("tidy/ugz_ogd_meteo_h1_2014_cleaned.csv")
+# data_meteo_cleaned15.to_csv("tidy/ugz_ogd_meteo_h1_2015_cleaned.csv")
+# data_meteo_cleaned16.to_csv("tidy/ugz_ogd_meteo_h1_2016_cleaned.csv")
+# data_meteo_cleaned17.to_csv("tidy/ugz_ogd_meteo_h1_2017_cleaned.csv")
+# data_meteo_cleaned18.to_csv("tidy/ugz_ogd_meteo_h1_2018_cleaned.csv")
+# data_meteo_cleaned19.to_csv("tidy/ugz_ogd_meteo_h1_2019_cleaned.csv")
+# data_meteo_cleaned20.to_csv("tidy/ugz_ogd_meteo_h1_2020_cleaned.csv")
 
 # # merge dataframes
 # data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', on=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'])

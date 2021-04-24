@@ -1,4 +1,4 @@
-<h3>Features:</h3>
+<h3>RoadTrafficAccidentLocations_cleaned.csv</h3>
 
 <h4>AccidentType</h4>
 0: Accident with skidding or self-accident
@@ -31,4 +31,5 @@
 First digit stands for east(2) and north(1).
 Reference point for coordinates:
 E (Ost) 	2'683'256.46 m 	 
-N (Nord) 	1'248'117.48 m 	 
+N (Nord) 	1'248'117.48 m 
+

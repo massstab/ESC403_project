@@ -141,27 +141,40 @@ features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
 # Perform cleaning
 # =============================================================================
 # clean accident data
-# data_accident_cleaned = data_accident[features_croped_accident].copy()  # complete new df with only used features
-# data_accident_cleaned[features_original_accident[11:14]] = data_accident_cleaned[features_original_accident[11:14]].astype(int)  # Changing bool to int
-# data_accident_cleaned[features_original_accident[34]] = data_accident_cleaned[features_original_accident[34]].astype(dtype='Int64')  # change weekday to int
-# to_int(data_accident_cleaned, features_original_accident, 1, 2)  # type
-# to_int(data_accident_cleaned, features_original_accident, 6, 2)  # severity
-# to_int(data_accident_cleaned, features_original_accident, 14, 4)  # road type
-# to_int(data_accident_cleaned, features_original_accident, 29, 3)  # week day
-# data_accident_cleaned = find_day(data_accident_cleaned)
-# data_accident_cleaned.to_pickle("tidy/RoadTrafficAccidentLocations_cleaned.pickle")
+# to generate all accident tidy data, uncomment this section
+"""
+data_accident_cleaned = data_accident[features_croped_accident].copy()  # complete new df with only used features
+data_accident_cleaned[features_original_accident[11:14]] = data_accident_cleaned[features_original_accident[11:14]].astype(int)  # Changing bool to int
+data_accident_cleaned[features_original_accident[34]] = data_accident_cleaned[features_original_accident[34]].astype(dtype='Int64')  # change weekday to int
+to_int(data_accident_cleaned, features_original_accident, 1, 2)  # type
+to_int(data_accident_cleaned, features_original_accident, 6, 2)  # severity
+to_int(data_accident_cleaned, features_original_accident, 14, 4)  # road type
+to_int(data_accident_cleaned, features_original_accident, 29, 3)  # week day
+data_accident_cleaned = find_day(data_accident_cleaned)
+data_accident_cleaned.to_pickle("tidy/RoadTrafficAccidentLocations_cleaned.pickle")
+data_accident_cleaned.to_csv("tidy/RoadTrafficAccidentLocations_cleaned.csv")
+"""
+
+# To read the already generated accident tidy data uncomment the following line
 data_accident_cleaned = pd.read_pickle("tidy/RoadTrafficAccidentLocations_cleaned.pickle")
-# data_accident_cleaned.to_csv("tidy/RoadTrafficAccidentLocations_cleaned.csv")
 
 # =============================================================================
 # clean meteo data
-# data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
-# data_meteo_cleaned.to_pickle("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
-data_meteo_cleaned = pd.read_pickle("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")  # Load the meteo df
-# data_meteo_cleaned.to_csv("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
+# to generate all meteo tidy data, uncomment this section
+"""
+data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
+data_meteo_cleaned.to_pickle("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
+data_meteo_cleaned.to_csv("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
+"""
 
+# To read the already generated meteo tidy data uncomment the following line
+data_meteo_cleaned = pd.read_pickle("tidy/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")  # Load the meteo df
+
+# =============================================================================
 # merge dataframes
 data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', on=['Date'])
 data_merged.dropna(inplace=True)
+data_merged.to_csv("tidy/data_merged.csv")
+
 
 # =============================================================================

@@ -8,3 +8,5 @@ env
 /data/raw_data/ugz_ogd_meteo_h1_2011-2020.csv
 /data/raw_data/Verkehrszahelung_Autos/
 /data/raw_data/Verkehrszaehlungen_werte_fussgaenger/
+/data/tidy_data/pre_tidy_fussgaenger_velo/
+/data/tidy_data/pre_tidy_auto/

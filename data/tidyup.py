@@ -25,6 +25,7 @@ def to_int(data, feature_list, m, k):
     temp = integerfy(data_arr, k)
     data[feature_list[m]] = temp  # make str of form "str" + "number" to number
 
+
 def find_day(df):
     """
     Replaces the year, month, weekday columns in accident df to a pandas datetime object as index.
@@ -62,13 +63,14 @@ def find_day(df):
 def meteo_date_prep(df):
     """
     Brings the meteo raw_data data in the right format and adds the datetime as index to the new
-    df and computes the average temperature from the two measuring stations
+    df and computes the average temperature/rain duration from the measuring stations
     :param df: raw_data meteo dataframe
     :return: the new meteo dataframe
     """
-    new_df = pd.DataFrame(columns=['Date', 'AvgTemperature'], dtype=float)
+    new_df = pd.DataFrame(columns=['Date', 'AvgTemperature', 'AvgRainDur'], dtype=float)
     i = 0
-    temp_sum = 0
+    temp_T = 0.0
+    temp_Rain = 0.0
     visited = False
     num_of_stations = 0
     current_hour = '00'
@@ -78,19 +80,24 @@ def meteo_date_prep(df):
         print('Please start the data frame at time 00:00')
     for row in df[['Datum', 'Standort', 'Parameter', 'Wert']].values:
         if row[0][11:13] != current_hour:
-            new_df.at[i, 'AvgTemperature'] = round(temp_sum / num_of_stations, 1)
+            new_df.at[i, 'AvgTemperature'] = round(temp_T / num_of_stations, 1)
+            new_df.at[i, 'AvgRainDur'] = round(temp_Rain / num_of_stations, 1)
             i += 1  # Update index for the next entry in new_df
-            temp_sum = 0
+            temp_T = 0.0
+            temp_Rain = 0.0
             visited = False
             num_of_stations = 0
             current_hour = row[0][11:13]
             first_station = row[1]
             current_station = first_station
-        if (row[2] == 'T'):
+        if (row[2] == 'T') or (row[2] == 'RainDur'):
+            if (row[2] == 'RainDur'):
+                temp_Rain += row[3]
+                continue
             if not visited:
                 visited = True
                 num_of_stations += 1
-                temp_sum += row[3]
+                temp_T += row[3]
                 year, month, day, hour = row[0][:4], row[0][5:7], row[0][8:10], row[0][11:13]
                 date = pd.to_datetime(year + "-" + month + "-" + day + "-" + hour)
                 new_df.at[i, 'Date'] = date
@@ -98,13 +105,18 @@ def meteo_date_prep(df):
 
             current_station = row[1]
             if current_station != first_station:
+                if (row[2] == 'RainDur'):
+                    temp_Rain += row[3]
+                    continue
                 num_of_stations += 1
-                temp_sum += row[3]
+                temp_T += row[3]
                 continue
 
-    new_df.at[i, 'AvgTemperature'] = round(temp_sum / num_of_stations, 1)  # The last entry
+    new_df.at[i, 'AvgTemperature'] = round(temp_T / num_of_stations, 1)  # The last entry
+    new_df.at[i, 'AvgRainDur'] = round(temp_Rain / num_of_stations, 1)  # The last entry
     new_df.set_index('Date', inplace=True)
     return new_df
+
 
 # =============================================================================
 # Raw data
@@ -159,9 +171,9 @@ data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_c
 # clean meteo data
 # to generate all meteo tidy_data data, uncomment this section
 """
-# data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
-# data_meteo_cleaned.to_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
-# data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
+data_meteo_cleaned = meteo_date_prep(data_meteo)  # Create new df with temperature
+data_meteo_cleaned.to_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
+data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 """
 
 # To read the already generated meteo tidy_data data uncomment the following line
@@ -170,9 +182,8 @@ data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleane
 # =============================================================================
 # merge dataframes
 data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
-# data_merged.dropna(inplace=True)
-# data_merged.to_pickle("tidy_data/data_merged.pickle")
-# data_merged.to_csv("tidy_data/data_merged.csv")
-
+data_merged.dropna(inplace=True)
+data_merged.to_pickle("tidy_data/data_merged.pickle")
+data_merged.to_csv("tidy_data/data_merged.csv")
 
 # =============================================================================

@@ -1,14 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("../data/raw/RoadTrafficAccidentLocations.csv")
-print(df.keys())
-df = df['AccidentYear']
-df = df.value_counts()
-y = df.values
-x = df.keys()
-# print(df.values)
-# print(df.keys)
+# just testing. can be removed completely
+df = pd.read_pickle('../data/tidy_data/data_merged.pickle')
+df = df
+x = df.index.year
+y = df['AvgTemperature']
+print(x)
+print(y)
+print(df.head)
 plt.grid()
 plt.bar(x, y)
 plt.show()

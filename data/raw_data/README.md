@@ -1,0 +1,1 @@
+Save raw data only local and put the files into .gitignore. Save data descriptions from the data providers in the descriptions folder.

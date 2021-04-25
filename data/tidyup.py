@@ -118,11 +118,74 @@ def meteo_date_prep(df):
     return new_df
 
 
+def velo_fuss_date_prep(df):
+    """
+    Brings the bike and pedestrian raw data in the right format and computes
+    the sum of bikes and pedestrains (in both street directions) passing
+    the corresponding detector.
+
+    Parameters
+    ----------
+    df : Pandas dataframe
+        raw meteo dataframe
+
+    Returns
+    -------
+    The bike and pedestrain dataframe
+    """
+    new_df = pd.DataFrame(columns=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
+               'AccidentHour','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
+               'SumBikerNumber', 'SumPedastrianNumber'])
+    i = 0
+    id_lst = list(set(df['FK_STANDORT'].to_numpy())) # to be pedantic, it's not the id but the location id
+    for i, id_number in enumerate(id_lst):
+        data_i = df[df['FK_STANDORT'] == id_number].values # gives a dataframe with just the data from that specific id_number
+        number_data_points = data_i.shape[0]
+        for j in range(int(number_data_points/4 - 1)): # division by four due to summation
+
+            # set date as done by the function meteo_date_prep
+            year, month, day, hour = data_i[j][2][:4], data_i[j][2][5:7], data_i[j][2][8:10], data_i[j][2][11:13]
+            date = pd.to_datetime(year + "-" + month + "-" + day + "-" + hour)
+            weekday = date.weekday() + 1  # 1,...,7 Monday,...,Sunday
+            new_df.at[(i + 1)*j, 'AccidentYear'] = int(year)
+            new_df.at[(i + 1)*j, 'AccidentMonth'] = int(month)
+            new_df.at[(i + 1)*j, 'AccidentWeekDay'] = int(weekday)  # Couldń't exctract which day of the month that is...
+            new_df.at[(i + 1)*j, 'AccidentHour'] = int(hour)
+
+            # set coordinates
+            new_df.at[(i + 1)*j, 'AccidentLocation_CHLV95_E'] = data_i[0][7]
+            new_df.at[(i + 1)*j, 'AccidentLocation_CHLV95_N'] = data_i[0][8]
+
+            # set sum of the data
+            new_df.at[(i + 1)*j, 'SumBikerNumber'] = __helper_velo_fuss(data_i[j*4:(j+1)*4][:,3], data_i[j*4:(j+1)*4][:,4])
+            new_df.at[(i + 1)*j, 'SumPedastrianNumber'] = __helper_velo_fuss(data_i[j*4:(j+1)*4][:,5], data_i[j*4:(j+1)*4][:,6])
+
+    return new_df
+
+
+def __helper_velo_fuss(lst1, lst2):
+    """ Helper function for velo_fuss_date_prep."""
+    nan_bool_lst1 = list(pd.Series(lst1).isnull()) # if an element is True, the corresponding element in lst is nan
+    nan_bool_lst2 = list(pd.Series(lst2).isnull()) # if an element is True, the corresponding element in lst is nan
+
+    reduce = lambda lst, nan_lst: [item for i, item in enumerate(lst) if not nan_lst[i]]
+    red1 = reduce(lst1, nan_bool_lst1)
+    red2 = reduce(lst2, nan_bool_lst2)
+
+    if red1 == [] and red2 == []:
+        return np.nan
+    else:
+        if red1 == [] and 0 < len(red2) <= 4:
+            return sum(red2)
+        elif red2 == [] and 0 < len(red1) <= 4:
+            return sum(red1)
+        else:
+            return 0.5 * sum(red1 + red2)
+
 # =============================================================================
 # Raw data
 # =============================================================================
-data_accident = pd.read_csv("raw_data/RoadTrafficAccidentLocations.csv")
-data_meteo = pd.read_csv("raw_data/ugz_ogd_meteo_h1_2011-2020.csv")
+# data_accident = pd.read_csv("raw_data/RoadTrafficAccidentLocations.csv")
 
 features_original_accident = ['AccidentUID', 'AccidentType', 'AccidentType_de',
                               'AccidentType_fr', 'AccidentType_it', 'AccidentType_en',
@@ -143,9 +206,35 @@ features_croped_accident = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
                             'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                             'AccidentInvolvingMotorcycle', 'RoadType', 'AccidentLocation_CHLV95_E',
                             'AccidentLocation_CHLV95_N']
+# =============================================================================
+# data_meteo = pd.read_csv("raw_data/ugz_ogd_meteo_h1_2011-2020.csv")
 
 features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
                   'Wert', 'Status']
+
+# =============================================================================
+# caution relatively big files
+# data_velo_fussgang11 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2011_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang12 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2012_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang13 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2013_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang14 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2014_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang15 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2015_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang16 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2016_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang17 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2017_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang18 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2018_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+data_velo_fussgang19 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2019_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+data_velo_fussgang20 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2020_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+
+features_velo_fuss = ['FK_ZAEHLER', 'FK_STANDORT', 'DATUM', 'VELO_IN', 'VELO_OUT',
+                      'FUSS_IN','FUSS_OUT', 'OST', 'NORD']
+
+features_croped_velo_fuss = ['FK_STANDORT', 'DATUM', 'VELO_IN', 'VELO_OUT',
+                      'FUSS_IN','FUSS_OUT', 'OST', 'NORD']
+
+features_new_velo_fuss = ['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
+                          'AccidentHour', 'AccidentLocation_CHLV95_E',
+                          'AccidentLocation_CHLV95_N' 'SumBikerNumber',
+                          'SumPedastrianNumber']
 
 # =============================================================================
 # Perform cleaning
@@ -166,7 +255,7 @@ data_accident_cleaned.to_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv
 """
 
 # To read the already generated accident tidy_data data uncomment the following line
-data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
+# data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
 # =============================================================================
 # clean meteo data
 # to generate all meteo tidy_data data, uncomment this section
@@ -177,13 +266,26 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 """
 
 # To read the already generated meteo tidy_data data uncomment the following line
-data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")  # Load the meteo df
+# data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")  # Load the meteo df
+
+# =============================================================================
+# clean biker and pedestrian counter data
+# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
 # =============================================================================
 # merge dataframes
-data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
-data_merged.dropna(inplace=True)
-data_merged.to_pickle("tidy_data/data_merged.pickle")
-data_merged.to_csv("tidy_data/data_merged.csv")
+# data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
+# data_merged.dropna(inplace=True)
+# data_merged.to_pickle("tidy_data/data_merged.pickle")
+# data_merged.to_csv("tidy_data/data_merged.csv")
 
 # =============================================================================

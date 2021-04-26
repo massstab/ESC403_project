@@ -118,6 +118,7 @@ def meteo_date_prep(df):
     return new_df
 
 
+# !!! please do not alter the format of the docstrings, in this format they will be displayed nicely in spyder
 def velo_fuss_date_prep(df):
     """
     Brings the bike and pedestrian raw data in the right format and computes
@@ -143,7 +144,7 @@ def velo_fuss_date_prep(df):
         number_data_points = data_i.shape[0]
         for j in range(int(number_data_points/4 - 1)): # division by four due to summation
 
-            # set date as done by the function meteo_date_prep
+            # set date as done by the function meteo_date_prep, well at least as done by the old version
             year, month, day, hour = data_i[j][2][:4], data_i[j][2][5:7], data_i[j][2][8:10], data_i[j][2][11:13]
             date = pd.to_datetime(year + "-" + month + "-" + day + "-" + hour)
             weekday = date.weekday() + 1  # 1,...,7 Monday,...,Sunday
@@ -175,12 +176,16 @@ def __helper_velo_fuss(lst1, lst2):
     if red1 == [] and red2 == []:
         return np.nan
     else:
-        if red1 == [] and 0 < len(red2) <= 4:
+        if red1 == [] and 0 < len(red2) <= 4: # it turns out that the inequality i.e. <= isn't neccessary since one can see that once one value is nan all 3 others are too
             return sum(red2)
-        elif red2 == [] and 0 < len(red1) <= 4:
+        elif red2 == [] and 0 < len(red1) <= 4: # it turns out that the inequality i.e. <= isn't neccessary since one can see that once one value is nan all 3 others are too
             return sum(red1)
         else:
             return 0.5 * sum(red1 + red2)
+
+
+def auto_prep(df):
+    pass
 
 # =============================================================================
 # Raw data
@@ -222,8 +227,8 @@ features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
 # data_velo_fussgang16 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2016_verkehrszaehlungen_werte_fussgaenger_velo.csv")
 # data_velo_fussgang17 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2017_verkehrszaehlungen_werte_fussgaenger_velo.csv")
 # data_velo_fussgang18 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2018_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang19 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2019_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang20 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2020_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang19 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2019_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang20 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2020_verkehrszaehlungen_werte_fussgaenger_velo.csv")
 
 features_velo_fuss = ['FK_ZAEHLER', 'FK_STANDORT', 'DATUM', 'VELO_IN', 'VELO_OUT',
                       'FUSS_IN','FUSS_OUT', 'OST', 'NORD']
@@ -270,16 +275,16 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 
 # =============================================================================
 # clean biker and pedestrian counter data
-# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
 # =============================================================================
 # merge dataframes

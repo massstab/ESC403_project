@@ -360,16 +360,41 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 
 # =============================================================================
 # clean biker and pedestrian counter data
-# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 # velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 # velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+
+
+# changing date format
+# data_velo_fussgang11_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang12_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang13_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang14_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang15_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang16_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang17_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang18_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang19_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+
+# find_day(data_velo_fussgang11_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang12_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang13_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang14_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang15_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang16_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang17_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang18_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang19_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# find_day(data_velo_fussgang20_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+
 
 # =============================================================================
 # merge dataframes

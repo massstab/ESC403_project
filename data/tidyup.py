@@ -193,7 +193,8 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     """
     Alocates the nearest location with respect to the locations in df1, if the
     distances of two or more points relative to the reference point are equal
-    the data will be averaged.
+    the data will be averaged. It is assumed that the coordinates are in close
+    proximaty s.t. the coordinate systems is locally flat.
 
     Parameters
     ----------

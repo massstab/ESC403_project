@@ -20,10 +20,8 @@ def to_int(data, feature_list, m, k):
     :return: None
     """
 
-    integerfy = lambda lst, i: [int(item[i:]) for item in lst]
     data_arr = data[feature_list[m]].to_numpy()
-    temp = integerfy(data_arr, k)
-    data[feature_list[m]] = temp  # make str of form "str" + "number" to number
+    data[feature_list[m]] = [int(item[k:]) for item in data_arr]  # make str of form "str" + "number" to number
 
 
 def find_day(df):
@@ -118,7 +116,8 @@ def meteo_date_prep(df):
     return new_df
 
 
-# !!! please do not alter the format of the docstrings, in this format they will be displayed nicely in spyder
+# !!! please do not alter the format of the docstrings,
+# in this format they will be displayed nicely in spyder
 def velo_fuss_date_prep(df):
     """
     Brings the bike and pedestrian raw data in the right format and computes
@@ -128,11 +127,12 @@ def velo_fuss_date_prep(df):
     Parameters
     ----------
     df : Pandas dataframe
-        raw meteo dataframe
+        Raw bike and pedetsrian count dataframe.
 
     Returns
     -------
-    The bike and pedestrain dataframe
+    New bike and pedestrain dataframe, where the per quarter hour count has been summed
+    to give per hour counts.
     """
     new_df = pd.DataFrame(columns=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay',
                'AccidentHour','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
@@ -186,6 +186,91 @@ def __helper_velo_fuss(lst1, lst2):
 
 def auto_prep(df):
     pass
+
+
+# this probably takes quiet a long time to be executed
+def associate_coord_to_accident_coord(radius, df1, df2):
+    """
+    Alocates the nearest location with respect to the locations in df1, if the
+    distances of two or more points relative to the reference point are equal
+    the data will be averaged, this
+
+    Parameters
+    ----------
+    radius : float
+        l2 maximal distance (in meters) from one reference point ind df1 to a
+        point in df2. If the distance between the point in df1 and df2 is greater
+        than the radius, the point in df2 will not be associated to the reference point.
+    df1 : DataFrame
+        Main dataframe (accident data), the data from df2 will be inserted into
+        this one.
+    df2 : DataFrame
+        Data for merging with df1.
+
+    Returns
+    -------
+    "Merged" DataFrame.
+    """
+
+    # find the unique coordinates
+    unique_coord_df1 = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
+    unique_coord_df2 = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
+
+    df1_new = df1.copy()
+    df1_new['SumBikerNumber'] = np.nan
+    df1_new['SumPedastrianNumber'] = np.nan
+
+    # find the nearest neighbours
+    for i, coord1 in enumerate(unique_coord_df1):
+        x1, y1 = coord1
+        temp1, temp2 = [], []
+        for coord2 in unique_coord_df2:
+            x2, y2 = coord2
+            distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+            if len(temp2) == 0:
+                temp2.append(distance)
+            if distance <= radius and distance == temp2[-1]:
+                print("sos, indeed you should indicate an average")
+                temp1.append(coord2)
+            elif distance <= radius and distance < temp2[-1]:
+                temp1 = []
+                temp1.append(coord2)
+                temp2[-1] = distance
+
+        # perform association
+        indices1 = df1[df1[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == coord1].dropna(axis=0).index
+
+        # caution here it is assumed that the dates for all coords in temp1 are the same, (which should hold, just to clarify the made choices here)
+        indices2 = df2[df2[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == temp1[-1]].dropna(axis=0).index
+        dates_df2 = df2['Date'].iloc[indices2].values
+
+        for i in indices1:
+            aviable_date = df1_new['Date'].iloc[i]
+            if aviable_date in dates_df2:
+
+                temp3 = df2[df2['Date'] == aviable_date]
+                value_bike = temp3['SumBikerNumber'].values
+                value_ped = temp3['SumPedastrianNumber'].values
+
+                # drop nans
+                value_bike = value_bike[np.logical_not(np.isnan(value_bike))]
+                value_ped = value_ped[np.logical_not(np.isnan(value_ped))]
+
+                if not len(value_bike):
+                    value_bike = np.nan # if empty assign nan
+                else:
+                    value_bike = value_bike.sum()/len(value_bike) # take the average if there are multiple points with the same distance
+
+                if not len(value_ped):
+                    value_ped = np.nan  # if empty assign nan
+                else:
+                    value_ped = value_ped.sum()/len(value_ped) # take the average if there are multiple points with the same distance
+
+                df1_new['SumBikerNumber'].iloc[i] = value_bike
+                df1_new['SumPedastrianNumber'].iloc[i] = value_ped
+
+        return df1_new
+
 
 # =============================================================================
 # Raw data

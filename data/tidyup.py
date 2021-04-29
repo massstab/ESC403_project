@@ -284,6 +284,7 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     return df1_new
 
 
+
 # =============================================================================
 # Raw data
 # =============================================================================
@@ -419,15 +420,12 @@ velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy_data/pre_tidy_fussgaenger
 # find_day_in_unique_coord(data_velo_fussgang20_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
 
-# # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...
+# TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...
 # data_counting_cleaned = pd.read_csv("tidy_data/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
 # data_counting_cleaned.dropna(inplace=True)
 # data_counting_cleaned.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
 # data_counting_cleaned = find_day(data_counting_cleaned)
 
-# =============================================================================
-# clean auto count data
-# data_auto_12 = pd.read_csv("raw_data/Verkehrszahelung_Autos/sid_dav_verkehrszaehlung_miv_OD2031_2012.csv")
 
 
 

@@ -6,7 +6,6 @@ Created on Thu Apr 15 16:30:42 2021
 import numpy as np
 import pandas as pd
 
-
 # =============================================================================
 # Tidy data functions
 # =============================================================================
@@ -221,68 +220,87 @@ def associate_coord_to_accident_coord(radius, df1, df2):
 
     Returns
     -------
-    "Merged" DataFrame.
+    Dataframe which matches both the coordinates in df1 and df2 up to a distance smaller
+    or equal to radius, and the date, i.e. the rows to change will be appended to the
+    new dataframe.
     """
 
     # find the unique coordinates
     unique_coord_df1 = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
     unique_coord_df2 = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
 
-    df1_new = df1.copy()
-    df1_new['SumBikerNumber'] = np.nan
-    df1_new['SumPedastrianNumber'] = np.nan
+
+    new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
+                                   'SumBikerNumber', 'SumPedestrianNumber'])
 
     # find the nearest neighbours
-    for i, coord1 in enumerate(unique_coord_df1):
+    j = 0
+    for coord1 in unique_coord_df1:
         x1, y1 = coord1
-        temp1, temp2 = [], []
+        coord2_lst, distance_lst = [], []
         for coord2 in unique_coord_df2:
             x2, y2 = coord2
             distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            if len(temp2) == 0:
-                temp2.append(distance)
-            if distance <= radius and distance == temp2[-1]:
+            if len(distance_lst) == 0 and distance <= radius:
+                distance_lst.append(distance)
+                coord2_lst.append(coord2)
+            elif distance <= radius and distance == distance_lst[-1] :
                 print("sos, indeed you should indicate an average")
-                temp1.append(coord2)
-            elif distance <= radius and distance < temp2[-1]:
-                temp1 = []
-                temp1.append(coord2)
-                temp2[-1] = distance
+                coord2_lst.append(coord2)
+            elif distance <= radius and distance < distance_lst[-1]:
+                coord2_lst = []
+                coord2_lst.append(coord2)
+                distance_lst[-1] = distance
 
-        # perform association
-        indices1 = df1[df1[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == coord1][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
+        # if there are coordinates within the radius, find the corresponding dates if aviable and overwrite the previously given nan
+        # if there are more than one coord. in coord2_lst take the average
+        if len(coord2_lst) != 0:
+            indices1 = df1[df1[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == coord1][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
 
-        # caution here it is assumed that the dates for all coords in temp1 are the same, (which should hold, just to clarify the made choices here)
-        indices2 = df2[df2[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == temp1[-1]][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
-        dates_df2 = df2['Date'].iloc[indices2].values
+            lst_indices2, lst_dates_df2 = [], []
+            for item in coord2_lst:
+                indices2 = df2[df2[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == item][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
+                dates_df2 = df2['Date'].iloc[indices2].values
+                lst_indices2.append(indices2)
+                lst_dates_df2.append(dates_df2)
 
-        for i in indices1:
-            aviable_date = df1_new['Date'].iloc[i]
-            if aviable_date in dates_df2:
+            for i in indices1:
+                aviable_date = df1['Date'].iloc[i]
 
-                temp3 = df2[df2['Date'] == aviable_date]
-                value_bike = temp3['SumBikerNumber'].values
-                value_ped = temp3['SumPedastrianNumber'].values
+                val_bike = []
+                val_ped = []
+                for indices_j, dates_j in zip(lst_indices2, lst_dates_df2):
+                    if aviable_date in dates_j:
+                        data_j = df2.iloc[indices_j][df2.iloc[indices_j]['Date'] == aviable_date].values
+                        val_bike.append(data_j[0][3])
+                        val_ped.append(data_j[0][4])
 
-                # drop nans
-                value_bike = value_bike[np.logical_not(np.isnan(value_bike))]
-                value_ped = value_ped[np.logical_not(np.isnan(value_ped))]
+                # format to drop nan
+                val_bike = np.array(val_bike)
+                val_ped = np.array(val_ped)
 
-                if not len(value_bike):
-                    value_bike = np.nan # if empty assign nan
-                else:
-                    value_bike = value_bike.sum()/len(value_bike) # take the average if there are multiple points with the same distance
+                val_bike = val_bike[np.logical_not(np.isnan(val_bike))]
+                val_ped = val_ped[np.logical_not(np.isnan(val_ped))]
 
-                if not len(value_ped):
-                    value_ped = np.nan  # if empty assign nan
-                else:
-                    value_ped = value_ped.sum()/len(value_ped) # take the average if there are multiple points with the same distance
+                length_bike = val_bike.shape[0]
+                length_ped = val_ped.shape[0]
 
-                df1_new['SumBikerNumber'].iloc[i] = value_bike
-                df1_new['SumPedastrianNumber'].iloc[i] = value_ped
+                if length_bike != 0 or length_ped != 0:
 
-    return df1_new
+                    val_bike = val_bike.sum()/length_bike if length_bike else np.nan # take the average if there are multiple points with the same distance
+                    val_ped = val_ped.sum()/length_ped if length_ped else np.nan # take the average if there are multiple points with the same distance
 
+                    new_df.at[j + i, 'Date'] = aviable_date
+
+                    new_df.at[j + i, 'AccidentLocation_CHLV95_E'] = coord1[0]
+                    new_df.at[j + i, 'AccidentLocation_CHLV95_N'] = coord1[1]
+
+                    new_df.at[j + i, 'SumBikerNumber'] = val_bike
+                    new_df.at[j + i, 'SumPedestrianNumber'] = val_ped
+
+            j += i + 1
+    new_df.set_index('Date', inplace=True)
+    return new_df
 
 
 # =============================================================================
@@ -317,16 +335,16 @@ features_meteo = ['Datum', 'Standort', 'Parameter', 'Intervall', 'Einheit',
 
 # =============================================================================
 # caution relatively big files
-data_velo_fussgang11 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2011_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang12 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2012_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang13 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2013_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang14 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2014_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang15 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2015_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang16 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2016_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang17 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2017_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang18 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2018_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang19 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2019_verkehrszaehlungen_werte_fussgaenger_velo.csv")
-data_velo_fussgang20 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2020_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang11 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2011_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang12 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2012_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang13 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2013_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang14 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2014_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang15 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2015_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang16 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2016_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang17 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2017_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang18 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2018_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang19 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2019_verkehrszaehlungen_werte_fussgaenger_velo.csv")
+# data_velo_fussgang20 = pd.read_csv("raw_data/Verkehrszaehlungen_werte_fussgaenger/2020_verkehrszaehlungen_werte_fussgaenger_velo.csv")
 
 features_velo_fuss = ['FK_ZAEHLER', 'FK_STANDORT', 'DATUM', 'VELO_IN', 'VELO_OUT',
                       'FUSS_IN','FUSS_OUT', 'OST', 'NORD']
@@ -373,59 +391,45 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 
 # =============================================================================
 # clean biker and pedestrian counter data
-velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang11).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang12).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang13).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang14).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang15).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang16).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang17).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang18).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang19).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# velo_fuss_date_prep(data_velo_fussgang20).to_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
 # =============================================================================
 # changing date format
-# data_velo_fussgang11_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang12_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang13_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang14_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang15_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang16_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang17_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang18_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang19_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
+# data_velo_fussgang11_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang12_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang13_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang14_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang15_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang16_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang17_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang18_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang19_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
-# data_velo_fussgang11_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang12_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang13_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang14_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang15_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang16_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang17_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang18_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang19_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_velo_fussgang20_c.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-
-# find_day_in_unique_coord(data_velo_fussgang11_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang12_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2012_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang13_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2013_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang14_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2014_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang15_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2015_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang16_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2016_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang17_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2017_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang18_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2018_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang19_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
-# find_day_in_unique_coord(data_velo_fussgang20_c).to_csv("tidy_data/pre_tidy_fussgaenger_velo/final_tidy/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
+# data_velo_fussgang11_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/test.csv")
+# df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
+# d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
+# d.to_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned_c.csv")
 
 
-# TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...
+# # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...
 # data_counting_cleaned = pd.read_csv("tidy_data/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
 # data_counting_cleaned.dropna(inplace=True)
 # data_counting_cleaned.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
 # data_counting_cleaned = find_day(data_counting_cleaned)
 
+# =============================================================================
+# clean auto count data
+# data_auto_12 = pd.read_csv("raw_data/Verkehrszahelung_Autos/sid_dav_verkehrszaehlung_miv_OD2031_2012.csv")
 
 
 

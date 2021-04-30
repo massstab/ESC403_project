@@ -247,10 +247,15 @@ def associate_coord_to_accident_coord(radius, df1, df2):
             elif distance <= radius and distance == distance_lst[-1] :
                 print("sos, indeed you should indicate an average")
                 coord2_lst.append(coord2)
+                distance_lst.append(distance)
+                print(f"The equaly distant coordinates: {coord2_lst}.",
+                      f"The distances {distance_lst}.",
+                      f"The accident coordinates: {coord1}.")
             elif distance <= radius and distance < distance_lst[-1]:
                 coord2_lst = []
                 coord2_lst.append(coord2)
-                distance_lst[-1] = distance
+                distance_lst = []
+                distance_lst.append(distance)
 
         # if there are coordinates within the radius, find the corresponding dates if aviable and overwrite the previously given nan
         # if there are more than one coord. in coord2_lst take the average
@@ -290,7 +295,8 @@ def associate_coord_to_accident_coord(radius, df1, df2):
                     val_bike = val_bike.sum()/length_bike if length_bike else np.nan # take the average if there are multiple points with the same distance
                     val_ped = val_ped.sum()/length_ped if length_ped else np.nan # take the average if there are multiple points with the same distance
 
-                    new_df.at[j + i, 'Date'] = aviable_date
+                    date = pd.to_datetime(aviable_date)
+                    new_df.at[j + i, 'Date'] = date
 
                     new_df.at[j + i, 'AccidentLocation_CHLV95_E'] = coord1[0]
                     new_df.at[j + i, 'AccidentLocation_CHLV95_N'] = coord1[1]
@@ -415,10 +421,11 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 # data_velo_fussgang19_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 # data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
-# data_velo_fussgang11_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/test.csv")
-# df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
-# d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
-# d.to_csv("tidy_data/pre_tidy_fussgaenger_velo/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned_c.csv")
+data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
+df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
+d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
+d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.csv")
+d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
 
 
 # # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...

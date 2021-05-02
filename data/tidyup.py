@@ -134,7 +134,6 @@ def velo_fuss_date_prep(df):
     new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
                'SumBikerNumber', 'SumPedastrianNumber'])
     k = 0
-    lst_lst_date = []
     id_lst = list(set(df['FK_STANDORT'].to_numpy())) # to be pedantic, it's not the id but the location id
     for i, id_number in enumerate(id_lst):
         data_i = df[df['FK_STANDORT'] == id_number].values # gives a dataframe with just the data from that specific id_number
@@ -229,12 +228,10 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     unique_coord_df1 = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
     unique_coord_df2 = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
 
-
     new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
                                    'SumBikerNumber', 'SumPedestrianNumber'])
 
     # find the nearest neighbours
-    j = 0
     for coord1 in unique_coord_df1:
         x1, y1 = coord1
         coord2_lst, distance_lst = [], []
@@ -296,15 +293,14 @@ def associate_coord_to_accident_coord(radius, df1, df2):
                     val_ped = val_ped.sum()/length_ped if length_ped else np.nan # take the average if there are multiple points with the same distance
 
                     date = pd.to_datetime(aviable_date)
-                    new_df.at[j + i, 'Date'] = date
+                    new_df.at[i, 'Date'] = date
 
-                    new_df.at[j + i, 'AccidentLocation_CHLV95_E'] = coord1[0]
-                    new_df.at[j + i, 'AccidentLocation_CHLV95_N'] = coord1[1]
+                    new_df.at[i, 'AccidentLocation_CHLV95_E'] = coord1[0]
+                    new_df.at[i, 'AccidentLocation_CHLV95_N'] = coord1[1]
 
-                    new_df.at[j + i, 'SumBikerNumber'] = val_bike
-                    new_df.at[j + i, 'SumPedestrianNumber'] = val_ped
+                    new_df.at[i, 'SumBikerNumber'] = val_bike
+                    new_df.at[i, 'SumPedestrianNumber'] = val_ped
 
-            j += i + 1
     new_df.set_index('Date', inplace=True)
     return new_df
 
@@ -423,9 +419,9 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 
 data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
 df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
-d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
-d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.csv")
-d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
+d = associate_coord_to_accident_coord(400, df, data_velo_fussgang11_c)
+d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.csv")
+d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.pickle")
 
 
 # # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...

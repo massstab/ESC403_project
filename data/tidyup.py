@@ -133,6 +133,7 @@ def velo_fuss_date_prep(df):
     """
     new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
                'SumBikerNumber', 'SumPedastrianNumber'])
+
     k = 0
     id_lst = list(set(df['FK_STANDORT'].to_numpy())) # to be pedantic, it's not the id but the location id
     for i, id_number in enumerate(id_lst):
@@ -228,6 +229,8 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     unique_coord_df1 = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
     unique_coord_df2 = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
 
+    print(unique_coord_df1)
+    print(unique_coord_df2, len(unique_coord_df2))
     new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
                                    'SumBikerNumber', 'SumPedestrianNumber'])
 
@@ -263,11 +266,13 @@ def associate_coord_to_accident_coord(radius, df1, df2):
             for item in coord2_lst:
                 indices2 = df2[df2[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == item][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
                 dates_df2 = df2['Date'].iloc[indices2].values
+                print(dates_df2)
                 lst_indices2.append(indices2)
                 lst_dates_df2.append(dates_df2)
 
             for i in indices1:
                 aviable_date = df1['Date'].iloc[i]
+                print(aviable_date)
 
                 val_bike = []
                 val_ped = []
@@ -276,6 +281,7 @@ def associate_coord_to_accident_coord(radius, df1, df2):
                         data_j = df2.iloc[indices_j][df2.iloc[indices_j]['Date'] == aviable_date].values
                         val_bike.append(data_j[0][3])
                         val_ped.append(data_j[0][4])
+                        print("s")
 
                 # format to drop nan
                 val_bike = np.array(val_bike)
@@ -420,8 +426,8 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
 df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
 d = associate_coord_to_accident_coord(400, df, data_velo_fussgang11_c)
-d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.csv")
-d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.pickle")
+# d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.csv")
+# d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.pickle")
 
 
 # # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...

@@ -443,6 +443,7 @@ data_accident_cleaned.to_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv
 
 # To read the already generated accident tidy_data data uncomment the following line
 # data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
+
 # =============================================================================
 # clean meteo data
 # to generate all meteo tidy_data data, uncomment this section
@@ -513,5 +514,11 @@ d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge
 # data_merged.dropna(inplace=True)
 # data_merged.to_pickle("tidy_data/data_merged.pickle")
 # data_merged.to_csv("tidy_data/data_merged.csv")
+data_velo_fussgang_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
+data_merged = pd.read_pickle("tidy_data/data_merged.pickle")
+data_merged = pd.merge(data_merged, data_velo_fussgang_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
+                            'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
+
+
 
 # =============================================================================

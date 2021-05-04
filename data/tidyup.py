@@ -5,6 +5,7 @@ Created on Thu Apr 15 16:30:42 2021
 """
 import numpy as np
 import pandas as pd
+import time
 
 # =============================================================================
 # Tidy data functions
@@ -226,62 +227,39 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     """
 
     # find the unique coordinates
-    unique_coord_df1 = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
-    unique_coord_df2 = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']).count().index
+    unique_coord_df1_temp = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N'])
+    unique_coord_df1 = unique_coord_df1_temp.count().index
 
-    print(unique_coord_df1)
-    print(unique_coord_df2, len(unique_coord_df2))
+    unique_coord_df2_temp = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N'])
+    unique_coord_df2 = unique_coord_df2_temp.count().index
+    unique_coord_df2_arr = np.array([list(item) for item in unique_coord_df2]) # the items are toopls, to_numpy() does not convert it properly to the wanted format
+
     new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
                                    'SumBikerNumber', 'SumPedestrianNumber'])
 
-    # find the nearest neighbours
     for coord1 in unique_coord_df1:
-        x1, y1 = coord1
-        coord2_lst, distance_lst = [], []
-        for coord2 in unique_coord_df2:
-            x2, y2 = coord2
-            distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            if len(distance_lst) == 0 and distance <= radius:
-                distance_lst.append(distance)
-                coord2_lst.append(coord2)
-            elif distance <= radius and distance == distance_lst[-1] :
-                print("sos, indeed you should indicate an average")
-                coord2_lst.append(coord2)
-                distance_lst.append(distance)
-                print(f"The equaly distant coordinates: {coord2_lst}.",
-                      f"The distances {distance_lst}.",
-                      f"The accident coordinates: {coord1}.")
-            elif distance <= radius and distance < distance_lst[-1]:
-                coord2_lst = []
-                coord2_lst.append(coord2)
-                distance_lst = []
-                distance_lst.append(distance)
+        coord2_lst = []
+        diff_temp = np.subtract(coord1, unique_coord_df2_arr)
+        distances = np.sqrt(np.sum(diff_temp*diff_temp,  axis=-1))
+        indices_minima = np.where(distances == min(distances))[0]
+        if distances[indices_minima[0]] <= radius:
+            coord2_lst.extend(list(unique_coord_df2[indices_minima].to_numpy()))
+            if len(indices_minima) > 1:
+                print("mo")
 
         # if there are coordinates within the radius, find the corresponding dates if aviable and overwrite the previously given nan
         # if there are more than one coord. in coord2_lst take the average
         if len(coord2_lst) != 0:
-            indices1 = df1[df1[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == coord1][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
-
-            lst_indices2, lst_dates_df2 = [], []
-            for item in coord2_lst:
-                indices2 = df2[df2[['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']] == item][['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N']].dropna(axis=0).index.values
-                dates_df2 = df2['Date'].iloc[indices2].values
-                print(dates_df2)
-                lst_indices2.append(indices2)
-                lst_dates_df2.append(dates_df2)
+            indices1 = unique_coord_df1_temp.get_group(coord1).index
 
             for i in indices1:
                 aviable_date = df1['Date'].iloc[i]
-                print(aviable_date)
-
-                val_bike = []
-                val_ped = []
-                for indices_j, dates_j in zip(lst_indices2, lst_dates_df2):
-                    if aviable_date in dates_j:
-                        data_j = df2.iloc[indices_j][df2.iloc[indices_j]['Date'] == aviable_date].values
+                val_ped, val_bike = [], []
+                for item in coord2_lst:
+                    if aviable_date in unique_coord_df2_temp.get_group(item)['Date'].values:
+                        data_j = unique_coord_df2_temp.get_group(item)[unique_coord_df2_temp.get_group(item)['Date'] == aviable_date].values
                         val_bike.append(data_j[0][3])
                         val_ped.append(data_j[0][4])
-                        print("s")
 
                 # format to drop nan
                 val_bike = np.array(val_bike)
@@ -306,6 +284,86 @@ def associate_coord_to_accident_coord(radius, df1, df2):
 
                     new_df.at[i, 'SumBikerNumber'] = val_bike
                     new_df.at[i, 'SumPedestrianNumber'] = val_ped
+
+    new_df.set_index('Date', inplace=True)
+    return new_df
+
+
+# sorry lazy copy of the function before for car count data
+def associate_coord_to_accident_coord_cars(radius, df1, df2):
+    """
+    Alocates the nearest location with respect to the locations in df1, if the
+    distances of two or more points relative to the reference point are equal
+    the data will be averaged. It is assumed that the coordinates are in close
+    proximaty s.t. the coordinate systems is locally flat.
+
+    Parameters
+    ----------
+    radius : float
+        l2 maximal distance (in meters) from one reference point ind df1 to a
+        point in df2. If the distance between the point in df1 and df2 is greater
+        than the radius, the point in df2 will not be associated to the reference point.
+    df1 : DataFrame
+        Main dataframe (accident data), the data from df2 will be inserted into
+        this one.
+    df2 : DataFrame
+        Data for merging with df1.
+
+    Returns
+    -------
+    Dataframe which matches both the coordinates in df1 and df2 up to a distance smaller
+    or equal to radius, and the date, i.e. the rows to change will be appended to the
+    new dataframe.
+    """
+
+    # find the unique coordinates
+    unique_coord_df1_temp = df1.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N'])
+    unique_coord_df1 = unique_coord_df1_temp.count().index
+
+    unique_coord_df2_temp = df2.groupby(['AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N'])
+    unique_coord_df2 = unique_coord_df2_temp.count().index
+    unique_coord_df2_arr = np.array([list(item) for item in unique_coord_df2]) # the items are toopls, to_numpy() does not convert it properly to the wanted format
+
+    new_df = pd.DataFrame(columns=['Date','AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N',
+                                   'SumCars'])
+
+    for coord1 in unique_coord_df1:
+        coord2_lst = []
+        diff_temp = np.subtract(coord1, unique_coord_df2_arr)
+        distances = np.sqrt(np.sum(diff_temp*diff_temp,  axis=-1))
+        indices_minima = np.where(distances == min(distances))[0]
+        if distances[indices_minima[0]] <= radius:
+            coord2_lst.extend(list(unique_coord_df2[indices_minima].to_numpy()))
+
+        # if there are coordinates within the radius, find the corresponding dates if aviable and overwrite the previously given nan
+        # if there are more than one coord. in coord2_lst take the average
+        if len(coord2_lst) != 0:
+            indices1 = unique_coord_df1_temp.get_group(coord1).index
+
+            for i in indices1:
+                aviable_date = df1['Date'].iloc[i]
+                val_car = []
+                for item in coord2_lst:
+                    if aviable_date in unique_coord_df2_temp.get_group(item)['Date'].values:
+                        data_j = unique_coord_df2_temp.get_group(item)[unique_coord_df2_temp.get_group(item)['Date'] == aviable_date].values
+                        val_car.append(data_j[0][3])
+
+                # format to drop nan
+                val_car = np.array(val_car)
+                val_car = val_car[np.logical_not(np.isnan(val_car))]
+                length_car = val_car.shape[0]
+
+                if length_car != 0:
+
+                    val_car = val_car.sum()/length_car if length_car else np.nan # take the average if there are multiple points with the same distance
+
+                    date = pd.to_datetime(aviable_date)
+                    new_df.at[i, 'Date'] = date
+
+                    new_df.at[i, 'AccidentLocation_CHLV95_E'] = coord1[0]
+                    new_df.at[i, 'AccidentLocation_CHLV95_N'] = coord1[1]
+
+                    new_df.at[i, 'SumCars'] = val_car
 
     new_df.set_index('Date', inplace=True)
     return new_df
@@ -423,11 +481,18 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 # data_velo_fussgang19_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2019_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 # data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
+
 data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
 df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
-d = associate_coord_to_accident_coord(400, df, data_velo_fussgang11_c)
-# d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.csv")
-# d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_400.pickle")
+d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
+d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.csv")
+d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.pickle")
+
+# data_auto_c = pd.read_csv("tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv")
+# df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
+# d = associate_coord_to_accident_coord_cars(1000, df, data_auto_c)
+# d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready_1000.csv")
+# d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready_1000.pickle")
 
 
 # # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...

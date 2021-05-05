@@ -11,6 +11,8 @@ import scipy.stats as stats
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.neighbors import KernelDensity
 from matplotlib.image import imread
+import numpy as np
+from helpers import lv95_latlong
 
 # =============================================================================
 # Data
@@ -25,7 +27,8 @@ features = ['Date','AccidentType','AccidentSeverityCategory',
 
 display_testing_arima = False
 display_testing_slider = False
-display_plot = True
+display_plot = False
+display_plot_openstreet = True
 # =============================================================================
 # Just for testing purposes, can all be deleted!
 # =============================================================================
@@ -81,3 +84,10 @@ if display_plot:
 
 # =============================================================================
 
+if display_plot_openstreet:
+    coords = np.loadtxt('../data/tidy_data/data_merged.csv', delimiter=",", skiprows=1, usecols=(7,8))
+    longitude, latitude = lv95_latlong(coords[:, 0], coords[:, 1])
+    BBox = (longitude.min(), longitude.max(), latitude.min(), latitude.max())
+
+    plt.scatter(longitude, latitude, marker=".")
+    plt.show()

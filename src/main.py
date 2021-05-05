@@ -10,7 +10,6 @@ import scipy.stats as stats
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.neighbors import KernelDensity
 from matplotlib.image import imread
-import numpy as np
 from helpers import lv95_latlong
 
 # =============================================================================
@@ -20,7 +19,10 @@ df = pd.read_csv('../data/tidy_data/data_merged.csv')
 # df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
 # df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
 
-std_map = imread("../data/Zürich_map/standard.png")
+map01 = imread("../data/Zürich_map/standard.png")
+map02 = imread("../data/Zürich_map/traffic.png")
+map03 = imread("../data/Zürich_map/human.png")
+
 BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
 
 map_calibration_meters = (2677538.0, 2689354.0, 1241844.0, 1254133.0)
@@ -60,7 +62,7 @@ if display_plot:
     ax.set_ylim(BBox[2], BBox[3])
     ax.set_title('Accidents Spatial Data')
     ax.scatter(longitude, latitude, s=z**2, c=z, cmap='seismic')
-    ax.imshow(std_map, extent=BBox, aspect=('auto'))
+    ax.imshow(map01, extent=BBox, aspect=('auto'))
     ax.show()
 
 
@@ -73,14 +75,14 @@ if display_plot_ped_bike:
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
     BBox = map_calibration_angle
-    std_map = imread("../data/Zürich_map/map.png")
+    map01 = imread("../data/Zürich_map/map.png")
 
     # fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
     ax.scatter(longitude, latitude, zorder=1, alpha=0.3, s=2, c="b")
     ax.set_xlim(BBox[0], BBox[1])
     ax.set_ylim(BBox[2], BBox[3])
     ax.set_title('Accidents Spatial Data')
-    ax.imshow(std_map, zorder=0, extent=map_calibration_angle, aspect='equal')
+    ax.imshow(map01, zorder=0, extent=map_calibration_angle, aspect='equal')
     plt.autoscale()
     plt.show()
 
@@ -93,7 +95,7 @@ if display_plot_car:
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
     BBox = map_calibration_angle
-    std_map = imread("../data/Zürich_map/map.png")
+    map01 = imread("../data/Zürich_map/map.png")
 
 
     fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
@@ -101,7 +103,7 @@ if display_plot_car:
     ax.set_xlim(BBox[0], BBox[1])
     ax.set_ylim(BBox[2], BBox[3])
     ax.set_title('Accidents Spatial Data')
-    ax.imshow(std_map, zorder=0, extent=map_calibration_angle, aspect='equal')
+    ax.imshow(map01, zorder=0, extent=map_calibration_angle, aspect='equal')
     plt.autoscale()
     plt.show()
 

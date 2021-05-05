@@ -17,4 +17,7 @@ def lv95_latlong(E, N):
     longitude = 2.6779094 + 4.728982 * y + 0.791484 * y * x + 0.1306 * y * x**2 - 0.0436 * y**3
     latitude = 16.9023892 + 3.238272 * x - 0.270978 * y**2 - 0.002528 * x**2 - 0.0447 * y**2 * x - 0.0140 * x**3
 
-    return longitude * 100 / 36, latitude * 100 / 36
+    longitude = longitude * 100 / 36
+    latitude = latitude * 100 / 36
+
+    return np.round(longitude, 5),  np.round(latitude, 5)

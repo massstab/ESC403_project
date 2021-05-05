@@ -86,8 +86,18 @@ if display_plot:
 
 if display_plot_openstreet:
     coords = np.loadtxt('../data/tidy_data/data_merged.csv', delimiter=",", skiprows=1, usecols=(7,8))
+    print(coords)
     longitude, latitude = lv95_latlong(coords[:, 0], coords[:, 1])
+    print(longitude)
+    print(latitude)
     BBox = (longitude.min(), longitude.max(), latitude.min(), latitude.max())
-
-    plt.scatter(longitude, latitude, marker=".")
+    print(BBox)
+    std_map = imread("../data/Zürich_map/map.png")
+    fig, ax = plt.subplots(figsize=(15, 12))
+    ax.scatter(longitude, latitude, zorder=1, alpha=0.3, c='b', s=10)
+    ax.set_xlim(BBox[0], BBox[1])
+    ax.set_ylim(BBox[2], BBox[3])
+    ax.set_title('Accidents Spatial Data')
+    ax.imshow(std_map, zorder=0, extent=BBox, aspect='equal')
+    plt.autoscale()
     plt.show()

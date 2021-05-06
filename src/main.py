@@ -61,7 +61,7 @@ if display_plot:
     ax.set_xlim(BBox[0], BBox[1])
     ax.set_ylim(BBox[2], BBox[3])
     ax.set_title('Accidents Spatial Data')
-    ax.scatter(longitude, latitude, s=z**2, c=z, cmap='seismic')
+    ax.scatter(longitude, latitude, s=z, c=z, cmap='seismic')
     ax.imshow(map01, extent=BBox, aspect=('auto'))
     plt.show()
 

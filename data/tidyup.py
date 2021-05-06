@@ -483,11 +483,11 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 # data_velo_fussgang20_c = pd.read_csv("tidy_data/pre_tidy_fussgaenger_velo/2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv")
 
 
-data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
-df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
-d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
-d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.csv")
-d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.pickle")
+# data_velo_fussgang11_c = pd.read_pickle("tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle")
+# df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
+# d = associate_coord_to_accident_coord(200, df, data_velo_fussgang11_c)
+# d.to_csv("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.csv")
+# d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready_200.pickle")
 
 # data_auto_c = pd.read_csv("tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv")
 # df = pd.read_csv("tidy_data/RoadTrafficAccidentLocations_cleaned.csv")
@@ -510,14 +510,22 @@ d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge
 
 # =============================================================================
 # merge dataframes
+
 # data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
 # data_merged.dropna(inplace=True)
 # data_merged.to_pickle("tidy_data/data_merged.pickle")
 # data_merged.to_csv("tidy_data/data_merged.csv")
+
 data_velo_fussgang_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
+data_auto_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready.pickle")
+
 data_merged = pd.read_pickle("tidy_data/data_merged.pickle")
 data_merged = pd.merge(data_merged, data_velo_fussgang_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
                             'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
+data_merged = pd.merge(data_merged, data_auto_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
+                            'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
+data_merged.to_pickle("tidy_data/data_merged.pickle")
+data_merged.to_csv("tidy_data/data_merged.csv")
 
 
 

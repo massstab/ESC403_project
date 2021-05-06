@@ -6,27 +6,22 @@ import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
 import matplotlib.pyplot as plt
-import scipy.stats as stats
-from statsmodels.tsa.arima.model import ARIMA
-from sklearn.neighbors import KernelDensity
 from matplotlib.image import imread
 from helpers import lv95_latlong
+from datasets import data_all
 
 # =============================================================================
 # Data
 # =============================================================================
-df = pd.read_csv('../data/tidy_data/data_merged.csv')
-# df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
-# df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
+df = data_all
+df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
+df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
 
 map01 = imread("../data/Zürich_map/standard.png")
 map02 = imread("../data/Zürich_map/traffic.png")
 map03 = imread("../data/Zürich_map/human.png")
 
-BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
-
-map_calibration_meters = (2677538.0, 2689354.0, 1241844.0, 1254133.0)
-map_calibration_angle = (8.4656, 8.6214, 47.3226, 47.4327)
+map_calibration_angle = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
 
 features = ['Date','AccidentType','AccidentSeverityCategory',
                           'AccidentInvolvingPedestrian','AccidentInvolvingBicycle',
@@ -54,15 +49,16 @@ if display_testing_slider:
     plot(fig)
 # =============================================================================
 if display_plot:
-    longitude, latitude = lv95_latlong(df[features[7]].values, df[features[8]].values)
+    long, lat = df[features[7]].values, df[features[8]].values
+    longitude, latitude = lv95_latlong(long, lat)
     z = df[features[2]].values.reshape((-1, 1))
 
     fig, ax = plt.subplots(figsize=(11, 12))
-    ax.set_xlim(BBox[0], BBox[1])
-    ax.set_ylim(BBox[2], BBox[3])
+    ax.set_xlim(map_calibration_angle[0], map_calibration_angle[1])
+    ax.set_ylim(map_calibration_angle[2], map_calibration_angle[3])
     ax.set_title('Accidents Spatial Data')
     ax.scatter(longitude, latitude, s=z, c=z, cmap='seismic')
-    ax.imshow(map01, extent=BBox, aspect=('auto'))
+    ax.imshow(map01, extent=map_calibration_angle, aspect=('auto'))
     plt.show()
 
 
@@ -74,13 +70,13 @@ if display_plot_ped_bike:
     # z = df_count_ped_bike[features[11]].values.reshape((-1, 1))
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
-    BBox = map_calibration_angle
+    map_calibration_angle = map_calibration_angle
     map01 = imread("../data/Zürich_map/map.png")
 
-    # fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
+    fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
     ax.scatter(longitude, latitude, zorder=1, alpha=0.3, s=2, c="b")
-    ax.set_xlim(BBox[0], BBox[1])
-    ax.set_ylim(BBox[2], BBox[3])
+    ax.set_xlim(map_calibration_angle[0], map_calibration_angle[1])
+    ax.set_ylim(map_calibration_angle[2], map_calibration_angle[3])
     ax.set_title('Accidents Spatial Data')
     ax.imshow(map01, zorder=0, extent=map_calibration_angle, aspect='equal')
     plt.autoscale()
@@ -94,14 +90,13 @@ if display_plot_car:
     # z = df_count_ped_bike[features[13]].values.reshape((-1, 1))
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
-    BBox = map_calibration_angle
     map01 = imread("../data/Zürich_map/map.png")
 
 
     fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
     ax.scatter(longitude, latitude, zorder=1, alpha=0.3,  s=2, c="b")
-    ax.set_xlim(BBox[0], BBox[1])
-    ax.set_ylim(BBox[2], BBox[3])
+    ax.set_xlim(map_calibration_angle[0], map_calibration_angle[1])
+    ax.set_ylim(map_calibration_angle[2], map_calibration_angle[3])
     ax.set_title('Accidents Spatial Data')
     ax.imshow(map01, zorder=0, extent=map_calibration_angle, aspect='equal')
     plt.autoscale()

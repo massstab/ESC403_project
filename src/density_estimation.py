@@ -44,8 +44,8 @@ longitude, latitude = lv95_latlong(x_coord, y_coord)
 map01 = imread("../data/Zürich_map/map.png")
 
 display_ped = True
-display_bike = False
-display_motor = False
+display_bike = True
+display_motor = True
 # =============================================================================
 # Display whole data st
 # =============================================================================
@@ -68,7 +68,7 @@ if display_ped:
     x_coord = data_ped[features[7]].values.reshape((-1, 1))
     y_coord = data_ped[features[8]].values.reshape((-1, 1))
     severity = data_ped[features[2]].values
-    sizes = list(0.1*severity)
+    sizes = list((severity)**3)
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
     X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
@@ -80,7 +80,53 @@ if display_ped:
     # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
     levels = np.linspace(0, Z.max(), 20)
     plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
-    ax.scatter(longitude, latitude, color='k', s=sizes)
+    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
+    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
+    plt.show()
+
+
+if display_bike:
+    data_bike = df[df[features[4]] == 1]
+    x_coord = data_bike[features[7]].values.reshape((-1, 1))
+    y_coord = data_bike[features[8]].values.reshape((-1, 1))
+    severity = data_bike[features[2]].values
+    sizes = list((severity)**3)
+
+    longitude, latitude = lv95_latlong(x_coord, y_coord)
+    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
+
+    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
+    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
+
+    fig, ax = plt.subplots(dpi=120)
+    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
+    levels = np.linspace(0, Z.max(), 20)
+    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
+    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
+    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
+    plt.show()
+
+
+if display_motor:
+    data_motor = df[df[features[5]] == 1]
+    x_coord = data_motor[features[7]].values.reshape((-1, 1))
+    y_coord = data_motor[features[8]].values.reshape((-1, 1))
+    severity = data_motor[features[2]].values
+    sizes = list((severity)**3)
+
+    longitude, latitude = lv95_latlong(x_coord, y_coord)
+    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
+
+    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
+    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
+
+    fig, ax = plt.subplots(dpi=120)
+    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
+    levels = np.linspace(0, Z.max(), 20)
+    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
+    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
     sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
     # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
     plt.show()

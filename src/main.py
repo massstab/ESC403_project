@@ -7,7 +7,7 @@ import plotly.express as px
 from plotly.offline import plot
 import matplotlib.pyplot as plt
 from matplotlib.image import imread
-from helpers import lv95_latlong
+from helpers import lv95_latlong, gis_pixel
 from datasets import data_all
 
 # =============================================================================
@@ -20,8 +20,10 @@ df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaeh
 map01 = imread("../data/Zürich_map/standard.png")
 map02 = imread("../data/Zürich_map/traffic.png")
 map03 = imread("../data/Zürich_map/human.png")
+map04 = imread("../data/Zürich_map/gis1.png")
 
 map_calibration_angle = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
+# map_calibration_angle = gis_pixel((2682732, 12448192), 77000, 300)  # Need for the gis maps printed from https://maps.zh.ch/
 
 features = ['Date','AccidentType','AccidentSeverityCategory',
                           'AccidentInvolvingPedestrian','AccidentInvolvingBicycle',
@@ -49,16 +51,15 @@ if display_testing_slider:
     plot(fig)
 # =============================================================================
 if display_plot:
-    long, lat = df[features[7]].values, df[features[8]].values
-    longitude, latitude = lv95_latlong(long, lat)
+    longitude, latitude = df[features[7]].values, df[features[8]].values
+    longitude, latitude = lv95_latlong(longitude, latitude)
     z = df[features[2]].values.reshape((-1, 1))
-
     fig, ax = plt.subplots(figsize=(11, 12))
     ax.set_xlim(map_calibration_angle[0], map_calibration_angle[1])
     ax.set_ylim(map_calibration_angle[2], map_calibration_angle[3])
     ax.set_title('Accidents Spatial Data')
     ax.scatter(longitude, latitude, s=z, c=z, cmap='seismic')
-    ax.imshow(map01, extent=map_calibration_angle, aspect=('auto'))
+    ax.imshow(map03, extent=map_calibration_angle, aspect=('auto'))
     plt.show()
 
 
@@ -101,4 +102,5 @@ if display_plot_car:
     ax.imshow(map01, zorder=0, extent=map_calibration_angle, aspect='equal')
     plt.autoscale()
     plt.show()
+
 

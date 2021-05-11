@@ -1,9 +1,6 @@
 venv
 env
 .ipynb_checkpoints
-
-
-
 /data/raw_data/RoadTrafficAccidentLocations.csv
 /data/raw_data/ugz_ogd_meteo_h1_2011-2020.csv
 /data/raw_data/Verkehrszahelung_Autos/
@@ -15,3 +12,7 @@ env
 /data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv
 /data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.pickle
 /data/Zürich_map/map.pdf
+/out/
+.aux
+.out
+.synctex.gz

@@ -20,4 +20,21 @@ def lv95_latlong(E, N):
     longitude = longitude * 100 / 36
     latitude = latitude * 100 / 36
 
-    return np.round(longitude, 5),  np.round(latitude, 5)
+    return np.round(longitude, 5), np.round(latitude, 5)
+
+def gis_pixel(center, scale, dpi):
+    """
+    FUNKTIONIERT NOCH NICHT!
+    Computes the boundaries of the map of an images printed from the gis browser (https://maps.zh.ch/).
+    :param center: Printed in the bottom right corner. Coordinates in LV95.
+    :param scale: Also in the bottom right corner of the print. Given in LV95 coordinates. Center of the map.
+    :param dpi: The dpi of the image in adjustable in the print dialog.
+    :return: The corner coordinates in LV95 (meters).
+    """
+    pixels = np.array([2168, 2750])
+    true_distance = pixels * 0.0254 * scale / dpi
+    left = center[0] - 0.5 * true_distance[0]
+    right = center[0] + 0.5 * true_distance[0]
+    bottom = center[1] - 0.5 * true_distance[1]
+    top = center[1] + 0.5 * true_distance[1]
+    return (left, right, bottom, top)

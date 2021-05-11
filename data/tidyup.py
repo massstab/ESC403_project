@@ -496,12 +496,6 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 # d.to_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready_1000.pickle")
 
 
-# # TODO: mach en for loop und append alles in e liste und denn speichere alles i eim df wo als csv und pickle speicherisch...
-# data_counting_cleaned = pd.read_csv("tidy_data/2011_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.csv", index_col=0)
-# data_counting_cleaned.dropna(inplace=True)
-# data_counting_cleaned.sort_values(by=['AccidentYear', 'AccidentMonth', 'AccidentWeekDay', 'AccidentHour'], axis=0, inplace=True, ignore_index=True)
-# data_counting_cleaned = find_day(data_counting_cleaned)
-
 # =============================================================================
 # clean auto count data
 # data_auto_12 = pd.read_csv("raw_data/Verkehrszahelung_Autos/sid_dav_verkehrszaehlung_miv_OD2031_2012.csv")
@@ -511,10 +505,20 @@ data_meteo_cleaned.to_csv("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.csv")
 # =============================================================================
 # merge dataframes
 
-# data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
-# data_merged.dropna(inplace=True)
-# data_merged.to_pickle("tidy_data/data_merged.pickle")
-# data_merged.to_csv("tidy_data/data_merged.csv")
+new_cols = {"AccidentType": "Type", "AccidentSeverityCategory": "SeverityCategory",
+                            "AccidentInvolvingPedestrian": "InvolvingPedestrian",
+                            "AccidentInvolvingBicycle": "InvolvingBicycle",
+                            "AccidentInvolvingMotorcycle": "InvolvingMotorcycle",
+                            "AccidentLocation_CHLV95_E": "Location_CHLV95_E",
+                            "AccidentLocation_CHLV95_N": "Location_CHLV95_N"}
+
+data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
+data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
+data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
+data_merged.dropna(inplace=True)
+# data_merged.rename(columns=new_cols, inplace=True)
+data_merged.to_pickle("tidy_data/data_merged.pickle")
+data_merged.to_csv("tidy_data/data_merged.csv")
 
 data_velo_fussgang_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
 data_auto_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready.pickle")

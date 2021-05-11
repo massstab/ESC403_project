@@ -57,7 +57,7 @@ map01 = imread("../data/Zürich_map/map.png")
 # Display KerneldensityEstimation
 # =============================================================================
 
-samples = np.vstack([longitude[:,0], latitude[:,0]]) # format data
+samples = np.vstack([longitude[:, 0], latitude[:,0]]) # format data
 X, Y = np.mgrid[BBox[0]:BBox[1]:1000j, BBox[2]:BBox[3]:1000j]
 positions = np.vstack([X.ravel(), Y.ravel()])
 

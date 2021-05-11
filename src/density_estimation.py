@@ -6,18 +6,21 @@ Created on Thu May  6 16:01:31 2021
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-from plotly.offline import plot
+# import plotly.express as px
+# from plotly.offline import plot
 import matplotlib.pyplot as plt
 import scipy.stats as stats
-from statsmodels.tsa.arima.model import ARIMA
+# from statsmodels.tsa.arima.model import ARIMA
 from matplotlib.image import imread
 from helpers import lv95_latlong
 import seaborn as sns
-from sklearn.neighbors import KernelDensity
 
+from datasets import data_all as df
 
-df = pd.read_csv('../data/tidy_data/data_merged.csv')[:100000]
+# from sklearn.neighbors import KernelDensity
+# from sklearn.model_selection import GridSearchCV
+# from sklearn.model_selection import KFold
+
 # df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
 # df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
 
@@ -40,6 +43,9 @@ y_coord = df[features[8]].values.reshape((-1, 1))
 longitude, latitude = lv95_latlong(x_coord, y_coord)
 map01 = imread("../data/Zürich_map/map.png")
 
+display_ped = True
+display_bike = False
+display_motor = False
 # =============================================================================
 # Display whole data st
 # =============================================================================
@@ -57,21 +63,42 @@ map01 = imread("../data/Zürich_map/map.png")
 # Display KerneldensityEstimation
 # =============================================================================
 
-samples = np.vstack([longitude[:, 0], latitude[:,0]]) # format data
-X, Y = np.mgrid[BBox[0]:BBox[1]:1000j, BBox[2]:BBox[3]:1000j]
-positions = np.vstack([X.ravel(), Y.ravel()])
+if display_ped:
+    data_ped = df[df[features[3]] == 1]
+    x_coord = data_ped[features[7]].values.reshape((-1, 1))
+    y_coord = data_ped[features[8]].values.reshape((-1, 1))
+    severity = data_ped[features[2]].values
+    sizes = list(0.1*severity)
 
-# via scipy.stats
-kernel = stats.gaussian_kde(samples)
-Z = np.reshape(kernel(positions).T, X.shape)
+    longitude, latitude = lv95_latlong(x_coord, y_coord)
+    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
 
-fig, ax = plt.subplots()
-ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
-ax.plot(longitude, latitude, 'k.', markersize=2)
-plt.show()
+    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
+    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
 
-# # via KernelDensity
-# kde = KernelDensity(bandwidth=0.00004, kernel='gaussian', algorithm='ball_tree')
+    fig, ax = plt.subplots(dpi=120)
+    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
+    levels = np.linspace(0, Z.max(), 20)
+    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
+    ax.scatter(longitude, latitude, color='k', s=sizes)
+    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
+    plt.show()
+
+# =============================================================================
+# Second approach
+# =============================================================================
+# via KernelDensity
+# bandwidths = 10 ** np.linspace(-1., 1., 100)
+# grid = GridSearchCV(KernelDensity(kernel='gaussian'),
+#                     {'bandwidth': bandwidths},
+#                     cv=KFold(2))
+
+# kde = grid.fit(samples)
+# kde.fit(samples.T)
+# print(kde.best_estimator_)
+
+# kde = KernelDensity(bandwidth=0.1, kernel='gaussian', algorithm='ball_tree')
 # print(samples.shape)
 # kde.fit(samples.T)
 # print(positions.shape)

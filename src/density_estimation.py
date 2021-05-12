@@ -17,35 +17,36 @@ import seaborn as sns
 
 from datasets import data_all as df
 
-# from sklearn.neighbors import KernelDensity
-# from sklearn.model_selection import GridSearchCV
-# from sklearn.model_selection import KFold
+from sklearn.neighbors import KernelDensity
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold
 
-# df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
-# df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
 
-map01 = imread("../data/Zürich_map/standard.png")
-map02 = imread("../data/Zürich_map/traffic.png")
-map03 = imread("../data/Zürich_map/human.png")
-
-BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
+# =============================================================================
+df = df
 
 features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
             'AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N','AvgTemperature',
             'AvgRainDur','SumBikerNumber','SumPedastrianNumber', 'SumCars']
 
+map00 = imread("../data/Zürich_map/map.png")
+map01 = imread("../data/Zürich_map/standard.png")
+map02 = imread("../data/Zürich_map/traffic.png")
+map03 = imread("../data/Zürich_map/human.png")
 
-x_coord = df[features[7]].values.reshape((-1, 1))
-y_coord = df[features[8]].values.reshape((-1, 1))
-# z = df_count_ped_bike[features[13]].values.reshape((-1, 1))
+BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
 
-longitude, latitude = lv95_latlong(x_coord, y_coord)
-map01 = imread("../data/Zürich_map/map.png")
 
-display_ped = True
-display_bike = False
-display_motor = False
+display_ped1 = False
+display_bike1 = False
+display_motor1 = False
+display_road1 = False
+
+display_ped2 = False
+display_bike2 = False
+display_motor2 = False
+display_road2 = False
 # =============================================================================
 # Display whole data st
 # =============================================================================
@@ -63,96 +64,129 @@ display_motor = False
 # Display KerneldensityEstimation
 # =============================================================================
 
-if display_ped:
-    data_ped = df[df[features[3]] == 1]
-    x_coord = data_ped[features[7]].values.reshape((-1, 1))
-    y_coord = data_ped[features[8]].values.reshape((-1, 1))
-    severity = data_ped[features[2]].values
-    sizes = list((severity)**3)
+def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
+                  x_coord_number=7, y_coord_number=8, severity_number=2,
+                  visualize_seaborn=False, visualize_scipy=False,
+                  visualize_sklearn=True):
+
+    """Computes the kernel density estimation for given data, provided they lie
+    on a plane with kown coordinates. Different method are used:
+
+    visualize via seaborn :
+        Here the default parameters are used to get the kernel density estimation
+        projected onto the x,y coordinates, as well as a projection of the x,z
+        coordinates and y,z coordinates on the sides of the plot, neat!
+
+    visualize via scipy :
+        Here the kernel density estimation is made via the silverman rule of
+        thumb of the bandwidth via the kwarg bw_method="silverman".
+
+    visualize via sklearn :
+        Here the kernel density estimation is made via the sklearn.neighbors
+        KernelDensity class. The bandwidth is estimated via the grid search class
+        in sklearn.model_selection via 2-fold crossvalidation through the use of
+        the sklearn.model_selection KFold class.
+
+    Parameters
+    ----------
+    data : DataFrame
+        Pandas dataframe.
+    im_map : ndarray
+        Image displayed under the estimated kernel densities.
+    BBox : list
+        List of the maximum and minimum of the coordinate system.
+    features : list
+        Features in the DataFrame.
+    feature_number : int
+        Index of the feature to be used.
+    feature_value : int {0,1, else int values used for the classes} or other types
+        Values used to distinct the classes.
+    x_coord_number : int, optional
+        Index of the feature where the x coordinates are saved. The default is 7.
+    y_coord_number : int, optional
+        Index of the feature where the y coordinates are saved. The default is 8.
+    severity_number : int or boolean False, optional
+        If False marker sizes are set to 1, else the number provided is assumed
+        to be the index of the accident severity category, the this information
+        will be used to set the marker sizes s.t. a bigger marker indicates a worse
+        accident. The default is 2.
+    visualize_seaborn : boolean, optional
+        Use estimation via seaborn. The default is False.
+    visualize_scipy : boolean, optional
+        Use estimation via scipy. The default is False.
+    visualize_sklearn : boolean, optional
+        Use estimation via sklearn. The default is False.
+
+    Returns
+    -------
+    None.
+
+    """
+    data = df[df[features[feature_number]] == feature_value]
+    x_coord = data[features[x_coord_number]].values.reshape((-1, 1))
+    y_coord = data[features[y_coord_number]].values.reshape((-1, 1))
+    if severity_number is not False:
+        severity = data[features[severity_number]].values
+        sizes = list((0.1*severity))
+    else:
+        sizes = list(np.ones(len(x_coord)))
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
     X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
 
-    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
-    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
-
-    fig, ax = plt.subplots(dpi=120)
-    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
-    levels = np.linspace(0, Z.max(), 20)
-    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
-    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
-    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
-    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
-    plt.show()
+    if visualize_seaborn:
+        sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+        # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
 
 
-if display_bike:
-    data_bike = df[df[features[4]] == 1]
-    x_coord = data_bike[features[7]].values.reshape((-1, 1))
-    y_coord = data_bike[features[8]].values.reshape((-1, 1))
-    severity = data_bike[features[2]].values
-    sizes = list((severity)**3)
+    if visualize_scipy:
 
-    longitude, latitude = lv95_latlong(x_coord, y_coord)
-    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
+        kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], bw_method="silverman")
+        Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
 
-    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
-    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
-
-    fig, ax = plt.subplots(dpi=120)
-    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
-    levels = np.linspace(0, Z.max(), 20)
-    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
-    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
-    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
-    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
-    plt.show()
+        fig, ax = plt.subplots(dpi=120)
+        levels = np.linspace(0, Z.max(), 20)
+        plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5) #
+        ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
+        ax.imshow(im_map, extent=BBox, alpha=1)
+        plt.show()
 
 
-if display_motor:
-    data_motor = df[df[features[5]] == 1]
-    x_coord = data_motor[features[7]].values.reshape((-1, 1))
-    y_coord = data_motor[features[8]].values.reshape((-1, 1))
-    severity = data_motor[features[2]].values
-    sizes = list((severity)**3)
+    if visualize_sklearn:
+        # formating data
+        samples = np.vstack([longitude[:, 0], latitude[:,0]]).T
+        xy_grid = np.vstack([X.ravel(), Y.ravel()]).T
+        bandwidths = np.linspace(0.0, 0.1, 100)
 
-    longitude, latitude = lv95_latlong(x_coord, y_coord)
-    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
+        #setting up a grid search to find best bandwidth via 2 fold corss validation
+        grid = GridSearchCV(KernelDensity(kernel='gaussian', algorithm="auto"), {'bandwidth': bandwidths},
+                            cv=KFold(2))
 
-    kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], "silverman")
-    Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
+        grid = grid.fit(samples) # perform estimation
+        kde =  grid.best_estimator_ # find estimation for best suited bandwidth
+        print(f"Best bandwidth: {kde.bandwidth}")
 
-    fig, ax = plt.subplots(dpi=120)
-    # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r, extent=BBox)
-    levels = np.linspace(0, Z.max(), 20)
-    plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues) #
-    ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.1)
-    sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
-    # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
-    plt.show()
+        # set up grid data
+        Z = kde.score_samples(xy_grid) # score_samples returns the log-likelihood of the sample
+        Z = np.exp(Z.reshape(X.shape))
 
-# =============================================================================
-# Second approach
-# =============================================================================
-# via KernelDensity
-# bandwidths = 10 ** np.linspace(-1., 1., 100)
-# grid = GridSearchCV(KernelDensity(kernel='gaussian'),
-#                     {'bandwidth': bandwidths},
-#                     cv=KFold(2))
+        # plot contours of the density
+        levels = np.linspace(0, Z.max(), 25)
+        fig, ax = plt.subplots(dpi=120)
+        plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
+        ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
+        plt.scatter(longitude, latitude, s=sizes)
+        plt.show()
 
-# kde = grid.fit(samples)
-# kde.fit(samples.T)
-# print(kde.best_estimator_)
+visualize_kde(df, map00, BBox, features, 3, 1)
+visualize_kde(df, map00, BBox, features, 4, 1)
+visualize_kde(df, map00, BBox, features, 5, 1)
 
-# kde = KernelDensity(bandwidth=0.1, kernel='gaussian', algorithm='ball_tree')
-# print(samples.shape)
-# kde.fit(samples.T)
-# print(positions.shape)
+l = [0, 1, 2, 3, 4, 9]
+visualize_kde(df, map00, BBox, features, 6, l[0])
+visualize_kde(df, map00, BBox, features, 6, l[1])
+visualize_kde(df, map00, BBox, features, 6, l[2])
+visualize_kde(df, map00, BBox, features, 6, l[3])
+visualize_kde(df, map00, BBox, features, 6, l[4])
+visualize_kde(df, map00, BBox, features, 6, l[5])
 
-# Z = kde.score_samples(positions.T)
-# Z = Z.reshape(X.shape)
-# # plot contours of the density
-# levels = np.linspace(0, Z.max(), 25)
-# plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Reds)
-# plt.scatter(longitude, latitude, s=2)
-# plt.show()

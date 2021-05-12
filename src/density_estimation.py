@@ -44,8 +44,8 @@ longitude, latitude = lv95_latlong(x_coord, y_coord)
 map01 = imread("../data/Zürich_map/map.png")
 
 display_ped = True
-display_bike = True
-display_motor = True
+display_bike = False
+display_motor = False
 # =============================================================================
 # Display whole data st
 # =============================================================================

@@ -21,9 +21,8 @@ from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 
-
 # =============================================================================
-df = df
+# df = df[:1000]
 
 features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
@@ -37,16 +36,6 @@ map03 = imread("../data/Zürich_map/human.png")
 
 BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
 
-
-display_ped1 = False
-display_bike1 = False
-display_motor1 = False
-display_road1 = False
-
-display_ped2 = False
-display_bike2 = False
-display_motor2 = False
-display_road2 = False
 # =============================================================================
 # Display whole data st
 # =============================================================================
@@ -67,10 +56,10 @@ display_road2 = False
 def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
                   x_coord_number=7, y_coord_number=8, severity_number=2,
                   visualize_seaborn=False, visualize_scipy=False,
-                  visualize_sklearn=True):
+                  visualize_sklearn=True, title=None):
 
     """Computes the kernel density estimation for given data, provided they lie
-    on a plane with kown coordinates. Different method are used:
+    on a plane with known coordinates. Different method are used:
 
     visualize via seaborn :
         Here the default parameters are used to get the kernel density estimation
@@ -122,17 +111,22 @@ def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
     None.
 
     """
+
     data = df[df[features[feature_number]] == feature_value]
     x_coord = data[features[x_coord_number]].values.reshape((-1, 1))
     y_coord = data[features[y_coord_number]].values.reshape((-1, 1))
+
+    longitude, latitude = lv95_latlong(x_coord, y_coord)
+    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
+
+    if title is None:
+        title = features[feature_number]
+
     if severity_number is not False:
         severity = data[features[severity_number]].values
         sizes = list((0.1*severity))
     else:
         sizes = list(np.ones(len(x_coord)))
-
-    longitude, latitude = lv95_latlong(x_coord, y_coord)
-    X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
 
     if visualize_seaborn:
         sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
@@ -144,11 +138,15 @@ def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
         kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], bw_method="silverman")
         Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
 
+        # plot contours of density
         fig, ax = plt.subplots(dpi=120)
+        plt.title(title)
         levels = np.linspace(0, Z.max(), 20)
         plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5) #
         ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
         ax.imshow(im_map, extent=BBox, alpha=1)
+        plt.xlabel("Longitude [°]")
+        plt.ylabel("Latitude [°]")
         plt.show()
 
 
@@ -173,20 +171,54 @@ def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
         # plot contours of the density
         levels = np.linspace(0, Z.max(), 25)
         fig, ax = plt.subplots(dpi=120)
+        plt.title(title)
         plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
         ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
         plt.scatter(longitude, latitude, s=sizes)
+        plt.xlabel("Longitude [°]")
+        plt.ylabel("Latitude [°]")
         plt.show()
 
-visualize_kde(df, map00, BBox, features, 3, 1)
-visualize_kde(df, map00, BBox, features, 4, 1)
-visualize_kde(df, map00, BBox, features, 5, 1)
 
-l = [0, 1, 2, 3, 4, 9]
-visualize_kde(df, map00, BBox, features, 6, l[0])
-visualize_kde(df, map00, BBox, features, 6, l[1])
-visualize_kde(df, map00, BBox, features, 6, l[2])
-visualize_kde(df, map00, BBox, features, 6, l[3])
-visualize_kde(df, map00, BBox, features, 6, l[4])
-visualize_kde(df, map00, BBox, features, 6, l[5])
+if __name__ == "__main__":
 
+    titles = ["Kernel density estimation: accidents involving pedestrians, 2011-2020",
+              "Kernel density estimation: accidents involving bicycles, 2011-2020",
+              "Kernel density estimation: accidents involving motocycles, 2011-2020",]
+    visualize_kde(df, map00, BBox, features, 3, 1, title=titles[0])
+    visualize_kde(df, map00, BBox, features, 4, 1, title=titles[1])
+    visualize_kde(df, map00, BBox, features, 5, 1, title=titles[2])
+
+    l = [0, 1, 2, 3, 4, 9]
+    titles = ["Kernel density estimation: accidents on motorways, 2011-2020",
+              "Kernel density estimation: accidents on expressways, 2011-2020",
+              "Kernel density estimation: accidents on principal roads, 2011-2020",
+              "Kernel density estimation: accidents on minor roads, 2011-2020",
+              "Kernel density estimation: accidents on motorways side installation, 2011-2020",
+              "Kernel density estimation: accidents on other road types, 2011-2020"]
+    visualize_kde(df, map00, BBox, features, 6, l[0], title=titles[0])
+    visualize_kde(df, map00, BBox, features, 6, l[1], title=titles[1])
+    visualize_kde(df, map00, BBox, features, 6, l[2], title=titles[2])
+    visualize_kde(df, map00, BBox, features, 6, l[3], title=titles[3])
+    visualize_kde(df, map00, BBox, features, 6, l[4], title=titles[4])
+    visualize_kde(df, map00, BBox, features, 6, l[5], title=titles[5])
+
+    l = [1, 2, 3, 4, 5, 6, 7, 8, 9] # check ambiguity of 0 and 00 in accident type (pdf)
+    titles = ["Kernel density estimation: accidents when overtaking or changing lanes, 2011-2020",
+              "Kernel density estimation: accidents with rear-end collision, 2011-2020",
+              "Kernel density estimation: accidents when turning left or right, 2011-2020",
+              "Kernel density estimation: accidents when turning-into main road, 2011-2020",
+              "Kernel density estimation: accidents when crossing the lane(s), 2011-2020",
+              "Kernel density estimation: accidents with head-on collision, 2011-2020",
+              "Kernel density estimation: accidents when parking, 2011-2020",
+              "Kernel density estimation: accidents involving pedestrian(s), 2011-2020",
+              "Kernel density estimation: accidents involving animal(s), 2011-2020"]
+    visualize_kde(df, map00, BBox, features, 2, l[0], title=titles[0])
+    visualize_kde(df, map00, BBox, features, 2, l[1], title=titles[1])
+    visualize_kde(df, map00, BBox, features, 2, l[2], title=titles[2])
+    visualize_kde(df, map00, BBox, features, 2, l[3], title=titles[3])
+    visualize_kde(df, map00, BBox, features, 2, l[4], title=titles[4]) # not enough data points for this estimation
+    visualize_kde(df, map00, BBox, features, 2, l[5], title=titles[5]) # not enough data points for this estimation
+    visualize_kde(df, map00, BBox, features, 2, l[6], title=titles[6]) # not enough data points for this estimation
+    visualize_kde(df, map00, BBox, features, 2, l[7], title=titles[7]) # not enough data points for this estimation
+    visualize_kde(df, map00, BBox, features, 2, l[8], title=titles[8]) # not enough data points for this estimation

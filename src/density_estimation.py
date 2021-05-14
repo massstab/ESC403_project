@@ -113,6 +113,7 @@ def visualize_kde(data, im_map, BBox, features, feature_number, feature_value,
     """
 
     data = df[df[features[feature_number]] == feature_value]
+    print(data)
     x_coord = data[features[x_coord_number]].values.reshape((-1, 1))
     y_coord = data[features[y_coord_number]].values.reshape((-1, 1))
 
@@ -185,9 +186,9 @@ if __name__ == "__main__":
     titles = ["Kernel density estimation: accidents involving pedestrians, 2011-2020",
               "Kernel density estimation: accidents involving bicycles, 2011-2020",
               "Kernel density estimation: accidents involving motocycles, 2011-2020",]
-    visualize_kde(df, map00, BBox, features, 3, 1, title=titles[0])
-    visualize_kde(df, map00, BBox, features, 4, 1, title=titles[1])
-    visualize_kde(df, map00, BBox, features, 5, 1, title=titles[2])
+    # visualize_kde(df, map00, BBox, features, 3, 1, title=titles[0])
+    # visualize_kde(df, map00, BBox, features, 4, 1, title=titles[1])
+    # visualize_kde(df, map00, BBox, features, 5, 1, title=titles[2])
 
     l = [0, 1, 2, 3, 4, 9]
     titles = ["Kernel density estimation: accidents on motorways, 2011-2020",
@@ -196,10 +197,10 @@ if __name__ == "__main__":
               "Kernel density estimation: accidents on minor roads, 2011-2020",
               "Kernel density estimation: accidents on motorways side installation, 2011-2020",
               "Kernel density estimation: accidents on other road types, 2011-2020"]
-    visualize_kde(df, map00, BBox, features, 6, l[0], title=titles[0])
-    visualize_kde(df, map00, BBox, features, 6, l[1], title=titles[1])
-    visualize_kde(df, map00, BBox, features, 6, l[2], title=titles[2])
-    visualize_kde(df, map00, BBox, features, 6, l[3], title=titles[3])
+    # visualize_kde(df, map00, BBox, features, 6, l[0], title=titles[0])
+    # visualize_kde(df, map00, BBox, features, 6, l[1], title=titles[1])
+    # visualize_kde(df, map00, BBox, features, 6, l[2], title=titles[2])
+    # visualize_kde(df, map00, BBox, features, 6, l[3], title=titles[3])
     visualize_kde(df, map00, BBox, features, 6, l[4], title=titles[4])
     visualize_kde(df, map00, BBox, features, 6, l[5], title=titles[5])
 

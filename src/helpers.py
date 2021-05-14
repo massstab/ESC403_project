@@ -1,4 +1,6 @@
 import numpy as np
+import tensorflow as tf
+
 
 def lv95_latlong(E, N):
     """
@@ -38,3 +40,21 @@ def gis_pixel(center, scale, dpi):
     bottom = center[1] - 0.5 * true_distance[1]
     top = center[1] + 0.5 * true_distance[1]
     return (left, right, bottom, top)
+
+
+def df_to_dataset(dataframe, shuffle=True, batch_size=32):
+    """
+    # A utility method to create a tf.data dataset from a Pandas Dataframe
+    :param dataframe: Pandas dataframe
+    :param shuffle: True or False
+    :param batch_size: batch size
+    :return: the ds.data dataframe
+    """
+    dataframe = dataframe.copy()
+    labels = dataframe.pop('target')
+    dataframe_dict = dict(dataframe)
+    ds = tf.data.Dataset.from_tensor_slices((dataframe_dict, labels))
+    if shuffle:
+        ds = ds.shuffle(buffer_size=len(dataframe))
+    ds = ds.batch(batch_size)
+    return ds

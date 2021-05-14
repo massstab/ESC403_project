@@ -5,29 +5,29 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from sklearn import (linear_model, datasets, metrics, discriminant_analysis)
-from datasets import data_all
+from datasets import data_all as df
 
-features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
-            'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
-            'AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N','AvgTemperature',
-            'AvgRainDur','SumBikerNumber','SumPedastrianNumber', 'SumCars']
+features = ['Date', 'AccidentType', 'AccidentSeverityCategory', 'AccidentInvolvingPedestrian',
+            'AccidentInvolvingBicycle', 'AccidentInvolvingMotorcycle', 'RoadType',
+            'AccidentLocation_CHLV95_E', 'AccidentLocation_CHLV95_N', 'AvgTemperature',
+            'AvgRainDur', 'SumBikerNumber', 'SumPedestrianNumber', 'SumCars']
 
-# data_all.index = pd.to_datetime(data_all.Date)
-# data_all.drop(columns='Date', inplace=True)
+df.index = pd.to_datetime(df.Date)
+df.drop(columns='Date', inplace=True)
 pd.options.display.max_columns = 100
 pd.options.display.max_rows = 100
 pd.set_option('display.width', 150)
 
 
-severity = False
-correlations = True
+severity = True
+correlations = False
 
 
 # =============================================================================
 # Take a look at severity and vehicle involvement
 # =============================================================================
 if severity:
-    df = data_all[['AccidentSeverityCategory', 'AccidentInvolvingPedestrian',
+    df = df[['AccidentSeverityCategory', 'AccidentInvolvingPedestrian',
                    'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle']]
     df = df.groupby('AccidentSeverityCategory', as_index=False).sum()
     x = df['AccidentSeverityCategory']
@@ -54,23 +54,24 @@ if severity:
 # Finding correlations
 # =============================================================================
 if correlations:
-    df = data_all[['AccidentType', 'RoadType']]
+    # df = data_all[['AvgTemperature', 'AccidentSeverityCategory']]
     # df = df.round(0)
     # df = df.sort_values('AccidentType')
     # df0 = df[(df.AccidentType == 0)]
-    # df1 = df[(df.AccidentType == 1)]
-    # df2 = df[(df.AccidentType == 2)]
-    # df3 = df[(df.AccidentType == 3)]
-    # df4 = df[(df.AccidentType == 4)]
-    # df5 = df[(df.AccidentType == 5)]
-    # df6 = df[(df.AccidentType == 6)]
-    # df7 = df[(df.AccidentType == 7)]
-    # df8 = df[(df.AccidentType == 8)]
-    # df9 = df[(df.AccidentType == 9)]
-
     # df_0 = df.query('AccidentType <= 7 and AccidentType >= 5 and AvgTemperature > 15')
-    # print(df1.head())
 
-    plt.scatter(df.iloc[:, 1], df.iloc[:, 0])
-    # sns.pairplot(df, diag_kind="kde")
-    plt.show()
+    # df = df[(df['RoadType'] != 2) & (df['RoadType'] != 3)]
+    df = df[(df['AccidentType'] == 0)]
+    # df.dropna('AccidentType', inplace=True)
+
+    def find_corr(featurex, featurey, category):
+        fig, ax = plt.subplots()
+        scatter = ax.scatter(df[featurex], df[featurey], c=df[category], s=2, cmap='tab10')
+        legend = ax.legend(*scatter.legend_elements(), loc="upper right", title=category)
+        ax.add_artist(legend)
+        ax.set_xlabel(featurex)
+        ax.set_ylabel(featurey)
+        # sns.pairplot(df, diag_kind="kde")
+        plt.show()
+
+    find_corr('SumCars', 'AvgRainDur', 'RoadType')

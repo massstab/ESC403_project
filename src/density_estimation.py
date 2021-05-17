@@ -94,8 +94,9 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         List of the maximum and minimum of the coordinate system.
     features : list
         Features in the DataFrame.
-    feature_number : int
-        Index of the feature to be used.
+    feature_number : int or "all"
+        Index of the feature to be used. If "all" the whole data set withot feature
+        dicrimination gets used.
     feature_value : int {0,1, else int values used for the classes} or other types
         Values used to distinct the classes.
     x_coord_number : int, optional
@@ -144,11 +145,14 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
 
     """
     if title is None:
-        title = features[feature_number]
+        if feature_number == "all":
+            title = "Accidnets in Zürich"
+        else:
+            title = features[feature_number]
 
     # set up data
     bunch_data, multiplots = __data_provider(df, features, feature_number, feature_value, x_coord_number=x_coord_number,
-                  y_coord_number=y_coord_number, severity_number=severity_number, date_number=date_number, whole_data=whole_data, day_time=day_time, seasons=seasons,
+                  y_coord_number=y_coord_number, severity_number=severity_number, title=title, date_number=date_number, whole_data=whole_data, day_time=day_time, seasons=seasons,
                   temperature=temperature, rain_dur=rain_dur)
 
     # init grid data
@@ -161,7 +165,7 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
                   visualize_sklearn):
 
         ax.clear()
-        data, x_coord, y_coord = bunch_data[0][i], bunch_data[1][i], bunch_data[2][i]
+        data, x_coord, y_coord, title = bunch_data[0][i], bunch_data[1][i], bunch_data[2][i], bunch_data[3][i]
         longitude, latitude = lv95_latlong(x_coord, y_coord)
 
         if severity_number is not False:
@@ -181,9 +185,10 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
 
             # plot contours of density
             levels = np.linspace(0, Z.max(), 20)
-            ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
+            co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
             ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
             ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
+            # cbar = plt.colorbar(co/500)
             plt.title(title)
             plt.xlabel("Longitude [°]")
             plt.ylabel("Latitude [°]")
@@ -211,10 +216,11 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
 
             # plot contours of the density
             levels = np.linspace(0, Z.max(), 25)
-            ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
+            co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
             ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
             ax.scatter(longitude, latitude, s=sizes)
             plt.title(title)
+            # cbar = plt.colorbar(co)
             plt.xlabel("Longitude [°]")
             plt.ylabel("Latitude [°]")
             plt.show()
@@ -247,16 +253,22 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
 
 
 def __data_provider(df, features, feature_number, feature_value, x_coord_number=7,
-                  y_coord_number=8, severity_number=2, date_number=0, whole_data=True, day_time=(False, 4), seasons=False,
+                  y_coord_number=8, severity_number=2, title=None, date_number=0, whole_data=True, day_time=(False, 4), seasons=False,
                   temperature=(False, 5), rain_dur=(False, 15)):
 
     """ Initialzes the data for kde estimation. See visualize_kde for description
     of the parameters."""
-    data = df[df[features[feature_number]] == feature_value]
+
+    if feature_number != "all":
+        data = df[df[features[feature_number]] == feature_value]
+    else:
+        data = df
+
     if whole_data:
         multiplots = 1
-        x_coord = data[features[x_coord_number]].values.reshape((-1, 1))
-        y_coord = data[features[y_coord_number]].values.reshape((-1, 1))
+        titles = [title]
+        x_coord = [data[features[x_coord_number]].values.reshape((-1, 1))]
+        y_coord = [data[features[y_coord_number]].values.reshape((-1, 1))]
 
     elif day_time[0]:
         multiplots = day_time[1]
@@ -266,23 +278,26 @@ def __data_provider(df, features, feature_number, feature_value, x_coord_number=
         df_new = data[[features[date_number], features[severity_number], features[x_coord_number], features[y_coord_number]]].copy()
         df_new.insert(3, 'Hour', df_new['Date'].dt.hour.to_numpy())
 
-        df_new['QuarterDay_category'] = df_new['Hour'] // day_time[1] + 1
+        hour_interval = list(np.arange(0, 23, 24//day_time[1])) + [23]
+        df_new['DividedDay_category'] = pd.cut(df_new['Hour'], list(np.arange(0, 23, 24//day_time[1])) + [23], labels=range(day_time[1]))
 
         data = []
         x_coord = []
         y_coord = []
-        for i in range(1,5):
-            unique_data_temp = df_new.groupby(['QuarterDay_category']).get_group(i)
+        titles = [f"{title}. Hours: {item}:00 - {hour_interval[i+1]}:00" for i, item in enumerate(hour_interval[:-1])]
+        for i in range(day_time[1]):
+            unique_data_temp = df_new.groupby(['DividedDay_category']).get_group(i)
             data.append(unique_data_temp[[features[date_number], features[severity_number], features[x_coord_number], features[y_coord_number]]])
             x_coord.append(unique_data_temp[features[x_coord_number]].values.reshape((-1, 1)))
             y_coord.append(unique_data_temp[features[y_coord_number]].values.reshape((-1, 1)))
 
-    return (data, x_coord, y_coord), multiplots
+    return (data, x_coord, y_coord, titles), multiplots
 
 
 # =============================================================================
 # Display KDE
 # =============================================================================
+# here comes the ugly code :P
 
 if __name__ == "__main__":
 
@@ -385,7 +400,7 @@ if __name__ == "__main__":
         # visualize_kde(df, map00, BBox, features, 2, l[8], title=titles[8]) # not enough data points for this estimation
 
     if animate_daytime:
-        visualize_kde(df, map00, BBox, features, 3, 1, whole_data=False, day_time=(True, 4), animation=True)
+        visualize_kde(df, map00, BBox, features, "all", 1, whole_data=False, day_time=(True, 23), animation=True)
 
 
 

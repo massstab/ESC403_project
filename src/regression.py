@@ -115,7 +115,11 @@ def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=Tr
 
 if __name__ == "__main__":
 
-    lst = [[True,False, False, False],[False, True, False, False],[False, False, True, False], [False, False, False, True]]
+    lst = [[True, False, False, False],
+           [False, True, False, False],
+           [False, False, True, False],
+           [False, False, False, True]]
+
     for item in lst:
         df_sum = sum_per_time(df, per_hour=item[0], per_day=item[1], per_month=item[2], per_year=item[3])
         x = list(range(len(df_sum.index.values)))

@@ -23,7 +23,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 
 # =============================================================================
-# df = df[:1000]
+df = df[:20000]
 
 features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
@@ -55,11 +55,12 @@ BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images i
 # =============================================================================
 # this is a big function and not very pythonic, if in use in the future split it into distinc functions
 def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, date_number=0,
-                  x_coord_number=7, y_coord_number=8, severity_number=2,
+                  x_coord_number=7, y_coord_number=8, severity_number=2, visualize_real_data=True,
                   visualize_seaborn=False, visualize_scipy=False,
                   visualize_sklearn=True, title=None, whole_data=True,
                   day_time=(False, 4), seasons=False, temperature=(False, 5),
-                  rain_dur=(False, 15), animation=False, animation_save_dir=False):
+                  rain_dur=(False, 15), animation=False, animation_save_dir=False,
+                  interpolate=False, interpol_nframes=3):
 
     """Computes the kernel density estimation for given data, provided they lie
     on a plane with known coordinates. Different method are used:
@@ -108,6 +109,8 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         to be the index of the accident severity category, the this information
         will be used to set the marker sizes s.t. a bigger marker indicates a worse
         accident. The default is 2.
+    visualize_real_data : boolean, optional
+        If True the real data get visualized with a scatter plot. The default is True.
     visualize_seaborn : boolean, optional
         Use estimation via seaborn. The default is False.
     visualize_scipy : boolean, optional
@@ -138,6 +141,13 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         If animation is True then animation_save_dir will be used as the directory
         to save the produced gif, if nothing is proveded the gif gets saved in
         the same directory as this file. The default is False.
+    interpolate :boolean, optional
+        Provided animation is True, the KDE gets linearly interpolated between frames
+        to get a smoother animation. The default is False.
+    interpol_nframes : int, optional
+        Provided animation is True as well as interpolate, the interpolate_frames
+        gives the number of additional frames to be passed to the animation. The
+        default is 3.
 
     Returns
     -------
@@ -150,106 +160,65 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         else:
             title = features[feature_number]
 
-    # set up data
-    bunch_data, multiplots = __data_provider(df, features, feature_number, feature_value, x_coord_number=x_coord_number,
+    # set up init. data
+    bunch_data_init, multiplots = __data_provider(df, features, feature_number, feature_value, x_coord_number=x_coord_number,
                   y_coord_number=y_coord_number, severity_number=severity_number, title=title, date_number=date_number, whole_data=whole_data, day_time=day_time, seasons=seasons,
                   temperature=temperature, rain_dur=rain_dur)
 
     # init grid data
     X, Y = np.mgrid[BBox[0]:BBox[1]:100j, BBox[2]:BBox[3]:100j]
 
-    # this has been writen as a function to do easy animations
-    def inner_func(i, im_map, BBox, features, feature_number, feature_value, date_number,
-                  x_coord_number, y_coord_number, severity_number,
-                  visualize_seaborn, visualize_scipy,
-                  visualize_sklearn):
+    # set up kde data
+    bunch_data_kde, z_max_lst = [], []
+    for i in range(multiplots):
+        data_kde, z_max = __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn,
+                                          visualize_scipy, visualize_sklearn)
+        bunch_data_kde.append(data_kde)
+        z_max_lst.append(z_max)
 
-        ax.clear()
-        data, x_coord, y_coord, title = bunch_data[0][i], bunch_data[1][i], bunch_data[2][i], bunch_data[3][i]
-        longitude, latitude = lv95_latlong(x_coord, y_coord)
-
-        if severity_number is not False:
-            severity = data[features[severity_number]].values
-            sizes = list((0.1*severity))
-        else:
-            sizes = list(np.ones(len(x_coord)))
-
-        if visualize_seaborn:
-            sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
-            # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
-
-
-        if visualize_scipy:
-            kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], bw_method="silverman")
-            Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
-
-            # plot contours of density
-            levels = np.linspace(0, Z.max(), 20)
-            co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
-            ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
-            ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
-            # cbar = plt.colorbar(co/500)
-            plt.title(title)
-            plt.xlabel("Longitude [°]")
-            plt.ylabel("Latitude [°]")
-
-            plt.show()
-
-
-        if visualize_sklearn:
-            # formating data
-            samples = np.vstack([longitude[:, 0], latitude[:,0]]).T
-            xy_grid = np.vstack([X.ravel(), Y.ravel()]).T
-            bandwidths = np.linspace(0.0, 0.1, 100)
-
-            #setting up a grid search to find best bandwidth via 2 fold corss validation
-            grid = GridSearchCV(KernelDensity(kernel='gaussian', algorithm="auto"), {'bandwidth': bandwidths},
-                                cv=KFold(2))
-
-            grid = grid.fit(samples) # perform estimation
-            kde =  grid.best_estimator_ # find estimation for best suited bandwidth
-            print(f"Best bandwidth: {kde.bandwidth}")
-
-            # set up grid data
-            Z = kde.score_samples(xy_grid) # score_samples returns the log-likelihood of the sample
-            Z = np.exp(Z.reshape(X.shape))
-
-            # plot contours of the density
-            levels = np.linspace(0, Z.max(), 25)
-            co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
-            ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
-            ax.scatter(longitude, latitude, s=sizes)
-            plt.title(title)
-            # cbar = plt.colorbar(co)
-            plt.xlabel("Longitude [°]")
-            plt.ylabel("Latitude [°]")
-            plt.show()
+    # provide the levels for the contour plot, wont be needed for seaborn
+    levels = np.linspace(0, max(z_max_lst), 25)
 
     # animated kde estimation
     if animation:
         #set up KDE
-        fig, ax = plt.subplots(dpi=120)
-        anim = matplotlib.animation.FuncAnimation(fig=fig, func=inner_func,
-                         frames=multiplots, interval=1, fargs=(im_map, BBox,
-                         features, feature_number, feature_value, date_number,
-                         x_coord_number, y_coord_number, severity_number,
-                         visualize_seaborn, visualize_scipy, visualize_sklearn),
+        plt.plot
+        fig, ax = plt.subplots(dpi=72)
+        if interpolate:
+            interpol_steps = np.linspace(0, 1, interpol_nframes + 2)[1:][:-1]
+            bunch_data_kde_new  = []
+            for i in range(multiplots-1):
+                data, longitude, latitude, title_k, Z = bunch_data_kde[i]
+                _, _, _, _, Z2 = bunch_data_kde[i + 1]
+                for step in interpol_steps:
+                    Z_interpol = __interpol(Z, Z2, step)
+                    bunch_data_kde_new.append((data, longitude, latitude, title_k, Z_interpol))
+            bunch_data_kde_new.append(bunch_data_kde[-1])
+            bunch_data_kde = bunch_data_kde_new
+            multiplots = (multiplots - 1) * interpol_nframes + 1
+
+        anim = matplotlib.animation.FuncAnimation(fig=fig, func=__visualizer,
+                         frames=multiplots, interval=1, fargs=(ax, bunch_data_kde,
+                         X, Y, levels, im_map, BBox, features, severity_number,
+                         title, visualize_real_data, visualize_seaborn, visualize_scipy, visualize_sklearn),
                          blit=False)
         # plt.show()
         writergif = matplotlib.animation.PillowWriter(fps=1)
         if animation_save_dir:
-            anim.save(f"{animation_save_dir}\\{title}.gif", writer=writergif)
+            writervideo = animation.FFMpegWriter(fps=18)
+            anim.save(f"{animation_save_dir}\\{title}.mp4", writer=writervideo)
         else:
-            anim.save(f"{title}.gif", writer=writergif)
+            writervideo = animation.FFMpegWriter(fps=18)
+            anim.save(f"{title}.mp4", writer=writervideo)
 
     # regular kde estimation
     else:
         #set up KDE
         for i in range(multiplots):
             fig, ax = plt.subplots(dpi=120)
-            inner_func(i, im_map, BBox, features, feature_number, feature_value,
-                   date_number, x_coord_number, y_coord_number, severity_number,
-                   visualize_seaborn, visualize_scipy, visualize_sklearn)
+            __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox, features,
+                         severity_number, title, visualize_real_data, visualize_seaborn, visualize_scipy,
+                         visualize_sklearn)
 
 
 def __data_provider(df, features, feature_number, feature_value, x_coord_number=7,
@@ -294,10 +263,102 @@ def __data_provider(df, features, feature_number, feature_value, x_coord_number=
     return (data, x_coord, y_coord, titles), multiplots
 
 
+def __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn, visualize_scipy,
+                    visualize_sklearn):
+
+    # set up data
+    data, x_coord, y_coord, title = bunch_data_init[0][i], bunch_data_init[1][i], bunch_data_init[2][i], bunch_data_init[3][i]
+    longitude, latitude = lv95_latlong(x_coord, y_coord)
+
+    if visualize_seaborn:
+        # set dummy data
+        Z = 0
+        z_max = 0
+
+    if visualize_scipy:
+        kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], bw_method="silverman")
+        Z = np.reshape(kernel([X.ravel(), Y.ravel()]).T, X.shape)
+        z_max = Z.max()
+
+    if visualize_sklearn:
+        # formating data
+        samples = np.vstack([longitude[:, 0], latitude[:,0]]).T
+        xy_grid = np.vstack([X.ravel(), Y.ravel()]).T
+        bandwidths = np.linspace(0.0, 0.1, 100)
+
+        #setting up a grid search to find best bandwidth via 2 fold corss validation
+        grid = GridSearchCV(KernelDensity(kernel='gaussian', algorithm="auto"), {'bandwidth': bandwidths},
+                            cv=KFold(2))
+
+        grid = grid.fit(samples) # perform estimation
+        kde =  grid.best_estimator_ # find estimation for best suited bandwidth
+        print(f"Best bandwidth: {kde.bandwidth}")
+
+        # set up grid data
+        Z = kde.score_samples(xy_grid) # score_samples returns the log-likelihood of the sample
+        Z = np.exp(Z.reshape(X.shape))
+        z_max = Z.max()
+
+    return (data, longitude, latitude,title, Z), z_max
+
+
+# this has been writen as a function to do easy animations
+def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
+               features, severity_number, title, visualize_real_data,
+               visualize_seaborn, visualize_scipy, visualize_sklearn):
+
+    data, longitude, latitude, title, Z = bunch_data_kde[i]
+    ax.clear()
+    if severity_number is not False:
+        severity = data[features[severity_number]].values
+        sizes = list((0.1*severity))
+    else:
+        sizes = list(np.ones(len(longitude)))
+
+    if visualize_seaborn:
+        sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+        # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
+
+
+    if visualize_scipy:
+        co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
+        ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
+        if visualize_real_data:
+            ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
+        # cbar = plt.colorbar(co/500)
+        plt.title(title)
+        plt.xlabel("Longitude [°]")
+        plt.ylabel("Latitude [°]")
+        plt.show()
+
+
+    if visualize_sklearn:
+        co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
+        ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
+        if visualize_real_data:
+            ax.scatter(longitude, latitude, s=sizes)
+        plt.title(title)
+        # cbar = plt.colorbar(co)
+        plt.xlabel("Longitude [°]")
+        plt.ylabel("Latitude [°]")
+        plt.show()
+
+
+def __interpol(m1, m2, t_interp):
+    """Linear interpolation between matrices.
+
+    Reference
+    ---------
+    .. [1] sebastian, stackoverflow, (Sep 6 2013 at 9:51), [online]
+       "**Interpolation between two matrices**". Aviable at:
+       https://stackoverflow.com/questions/18654511/interpolation-between-two-matrices ,
+       [Accessed 18 Mai 2021]
+    """
+    return m1 + (m2 - m1) * t_interp
+
 # =============================================================================
 # Display KDE
 # =============================================================================
-# here comes the ugly code :P
 
 if __name__ == "__main__":
 
@@ -400,7 +461,9 @@ if __name__ == "__main__":
         # visualize_kde(df, map00, BBox, features, 2, l[8], title=titles[8]) # not enough data points for this estimation
 
     if animate_daytime:
-        visualize_kde(df, map00, BBox, features, "all", 1, whole_data=False, day_time=(True, 23), animation=True)
+        visualize_kde(df, map00, BBox, features, 3, 1, whole_data=False,
+                      day_time=(True, 23), animation=True, visualize_real_data=False,
+                      interpolate=True, interpol_nframes=9)
 
 
 

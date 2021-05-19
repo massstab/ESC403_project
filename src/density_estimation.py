@@ -207,7 +207,7 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         if animation_save_dir:
             anim.save(f"{animation_save_dir}\\{title}.mp4", writer=writer)
         else:
-            anim.save(f"{title}16.mp4", writer=writer)
+            anim.save(f"{title}17_256.mp4", writer=writer)
 
     # regular kde estimation
     else:
@@ -282,7 +282,7 @@ def __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn, visualize_scipy
         # formating data
         samples = np.vstack([longitude[:, 0], latitude[:,0]]).T
         xy_grid = np.vstack([X.ravel(), Y.ravel()]).T
-        bandwidths = np.linspace(0.0, 0.1, 10)
+        bandwidths = np.linspace(0.0, 0.1, 256)
 
         #setting up a grid search to find best bandwidth via 2 fold corss validation
         grid = GridSearchCV(KernelDensity(kernel='gaussian', algorithm="auto"), {'bandwidth': bandwidths},
@@ -339,7 +339,8 @@ def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
         # cbar = plt.colorbar(co)
         plt.xlabel("Longitude [°]")
         plt.ylabel("Latitude [°]")
-        # plt.show()
+        if not animation:
+            plt.show()
 
 
 def __interpol(m1, m2, t_interp):
@@ -460,7 +461,7 @@ if __name__ == "__main__":
 
     if animate_daytime:
         visualize_kde(df, map00, BBox, features, 3, 1, whole_data=False,
-                      day_time=(True, 23), animation=True, visualize_real_data=False,
+                      day_time=(True, 23), animation=False, visualize_real_data=False,
                       interpolate=True, interpol_nframes=9)
 
 

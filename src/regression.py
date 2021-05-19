@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from datasets import data_all as df
 import statsmodels.formula.api as sm
 
-
 # =============================================================================
 
 pd.options.display.max_columns = 5

@@ -1,5 +1,7 @@
 import numpy as np
 import tensorflow as tf
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.pyplot as plt
 
 
 def lv95_latlong(E, N):
@@ -58,3 +60,28 @@ def df_to_dataset(dataframe, shuffle=True, batch_size=32):
         ds = ds.shuffle(buffer_size=len(dataframe))
     ds = ds.batch(batch_size)
     return ds
+
+def ccolormap(name='Blues_custom'):
+    """
+    From:
+    https://stackoverflow.com/questions/51601272/python-matplotlib-heatmap-colorbar-from-transparent
+    :return:
+    """
+    # get colormap
+    ncolors = 256
+    color_array = plt.cm.Blues(range(ncolors))
+    # change alpha values
+    color_array[:, -1] = np.linspace(0.0, 1.0, ncolors)
+
+    # create a colormap object
+    map_object = LinearSegmentedColormap.from_list(name=name, colors=color_array)
+
+    # register this new colormap with matplotlib
+    plt.register_cmap(cmap=map_object)
+    #
+    # # show some example data
+    # f, ax = plt.subplots()
+    # h = ax.imshow(np.random.rand(100, 100), cmap='Blues_custom')
+    # plt.colorbar(mappable=h)
+    # plt.show()
+

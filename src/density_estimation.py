@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 # from statsmodels.tsa.arima.model import ARIMA
 from matplotlib.image import imread
-from helpers import lv95_latlong
+from helpers import lv95_latlong, ccolormap
 import seaborn as sns
 
 from datasets import data_all as df
@@ -23,7 +23,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 
 # =============================================================================
-df = df[:20000]
+# df = df[:20000]
 
 features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
@@ -177,16 +177,20 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
         z_max_lst.append(z_max)
 
     # provide the levels for the contour plot, wont be needed for seaborn
-    levels = np.linspace(0, max(z_max_lst), 25)
+    levels = np.linspace(0, max(z_max_lst), 100)
+
+    # initialize custom colormap with transparency
+    ccolormap(name='Blues_custom')
 
     # animated kde estimation
     if animation:
+        Writer = matplotlib.animation.writers['ffmpeg']
+        writer = Writer(fps=15, metadata=dict(artist='MarceloDave'), bitrate=2700)
         #set up KDE
-        plt.plot
-        fig, ax = plt.subplots(dpi=72)
+        fig, ax = plt.subplots(figsize=(9, 10), dpi=144)
         if interpolate:
             interpol_steps = np.linspace(0, 1, interpol_nframes + 2)[1:][:-1]
-            bunch_data_kde_new  = []
+            bunch_data_kde_new = []
             for i in range(multiplots-1):
                 data, longitude, latitude, title_k, Z = bunch_data_kde[i]
                 _, _, _, _, Z2 = bunch_data_kde[i + 1]
@@ -196,20 +200,14 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
             bunch_data_kde_new.append(bunch_data_kde[-1])
             bunch_data_kde = bunch_data_kde_new
             multiplots = (multiplots - 1) * interpol_nframes + 1
-
         anim = matplotlib.animation.FuncAnimation(fig=fig, func=__visualizer,
-                         frames=multiplots, interval=1, fargs=(ax, bunch_data_kde,
+                         frames=multiplots, fargs=(ax, bunch_data_kde,
                          X, Y, levels, im_map, BBox, features, severity_number,
-                         title, visualize_real_data, visualize_seaborn, visualize_scipy, visualize_sklearn),
-                         blit=False)
-        # plt.show()
-        writergif = matplotlib.animation.PillowWriter(fps=1)
+                         title, visualize_real_data, visualize_seaborn, visualize_scipy, visualize_sklearn))
         if animation_save_dir:
-            writervideo = animation.FFMpegWriter(fps=18)
-            anim.save(f"{animation_save_dir}\\{title}.mp4", writer=writervideo)
+            anim.save(f"{animation_save_dir}\\{title}.mp4", writer=writer)
         else:
-            writervideo = animation.FFMpegWriter(fps=18)
-            anim.save(f"{title}.mp4", writer=writervideo)
+            anim.save(f"{title}16.mp4", writer=writer)
 
     # regular kde estimation
     else:
@@ -284,7 +282,7 @@ def __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn, visualize_scipy
         # formating data
         samples = np.vstack([longitude[:, 0], latitude[:,0]]).T
         xy_grid = np.vstack([X.ravel(), Y.ravel()]).T
-        bandwidths = np.linspace(0.0, 0.1, 100)
+        bandwidths = np.linspace(0.0, 0.1, 10)
 
         #setting up a grid search to find best bandwidth via 2 fold corss validation
         grid = GridSearchCV(KernelDensity(kernel='gaussian', algorithm="auto"), {'bandwidth': bandwidths},
@@ -292,7 +290,7 @@ def __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn, visualize_scipy
 
         grid = grid.fit(samples) # perform estimation
         kde =  grid.best_estimator_ # find estimation for best suited bandwidth
-        print(f"Best bandwidth: {kde.bandwidth}")
+        # print(f"Best bandwidth: {kde.bandwidth}")
 
         # set up grid data
         Z = kde.score_samples(xy_grid) # score_samples returns the log-likelihood of the sample
@@ -322,7 +320,6 @@ def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
 
     if visualize_scipy:
         co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
-        ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
         if visualize_real_data:
             ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
         # cbar = plt.colorbar(co/500)
@@ -333,15 +330,16 @@ def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
 
 
     if visualize_sklearn:
-        co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.hot_r, alpha=0.5)
-        ax.imshow(im_map, alpha=1, extent=BBox, aspect='equal')
+        ax.imshow(im_map, extent=BBox, aspect='auto')
+        ax.contourf(X, Y, Z, levels=levels, cmap='hot', alpha=0.5,  antialiased=True)
+        print(f'Image#: {i}')
         if visualize_real_data:
             ax.scatter(longitude, latitude, s=sizes)
         plt.title(title)
         # cbar = plt.colorbar(co)
         plt.xlabel("Longitude [°]")
         plt.ylabel("Latitude [°]")
-        plt.show()
+        # plt.show()
 
 
 def __interpol(m1, m2, t_interp):

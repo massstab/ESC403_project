@@ -1,3 +1,20 @@
+<h2>The code book</h2>
+The sources of the raw data in the raw_data/ folder are:<br>
+The main accident data: [RoadTrafficAccidentLocations](https://opendata.swiss/de/dataset/polizeilich-registrierte-verkehrsunfalle-auf-dem-stadtgebiet-zurich-seit-2011/resource/3bf3f12a-bf09-4e69-8cde-0df9e268d54b) <br>
+Bycicle and pedestrian counting: [Daten der automatischen Fussgänger- und Velozählung - Viertelstundenwerte](https://data.stadt-zuerich.ch/dataset/ted_taz_verkehrszaehlungen_werte_fussgaenger_velo) <br>
+Meteo data: [Stündlich aktualisierte Meteodaten](https://data.stadt-zuerich.ch/dataset/ugz_meteodaten_stundenmittelwerte) <br>
+Traffic counting: [sid_dav_verkehrszaehlung_miv_OD2031_2020](https://data.stadt-zuerich.ch/dataset/sid_dav_verkehrszaehlung_miv_od2031/resource/44607195-a2ad-4f9b-b6f1-d26c003d85a2) <br>
+
+
+In the `tidy_data/` folder there 5 different datasets. Including `data_merged.csv` which is the merged tidy dataset of
+all other 4 tidy sets. For reproducibility reasons we provide also `tidyup.py` (esiting of raw data).
+
+Because it was more convenient to have all the years in one
+file, we merged the years 2011-2020 together with `raw_pretidy.py`.
+
+In the `Descriptions/` folder there are also information about how the data was collected and other details to the raw data.
+
+Here we describe the most important variables in the tidy files:
 <h3>RoadTrafficAccidentLocations_cleaned.csv</h3>
 
 <h4>AccidentType</h4>

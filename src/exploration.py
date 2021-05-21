@@ -19,8 +19,8 @@ pd.options.display.max_rows = 100
 pd.set_option('display.width', 150)
 
 
-severity = True
-correlations = False
+severity = False
+correlations = True
 
 
 # =============================================================================
@@ -71,7 +71,7 @@ if correlations:
         ax.add_artist(legend)
         ax.set_xlabel(featurex)
         ax.set_ylabel(featurey)
-        # sns.pairplot(df, diag_kind="kde")
+        sns.pairplot(df, diag_kind="kde")
         plt.show()
 
     find_corr('SumCars', 'AvgRainDur', 'RoadType')

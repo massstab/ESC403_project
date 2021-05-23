@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+
 
 
 def lv95_latlong(E, N):
@@ -86,3 +88,35 @@ def ccolormap(name='Blues_custom'):
     # h = ax.imshow(np.random.rand(100, 100), cmap='Blues_custom')
     # plt.colorbar(mappable=h)
     # plt.show()
+
+
+def prepare_data_classification(dataframe):
+    """
+    Prepares the dataframe for classification tasks. Just making column names shorter.
+    :param dataframe: The Accident data_all dataset
+    :return: The edited dataframe
+    """
+    dataframe = dataframe.drop(columns=['Date', 'SumBikerNumber',
+                                        'SumBikerNumber', 'SumCars', 'SumPedestrianNumber'])
+    # Shorten feature names just for convenient output format
+    new_cols = {"AccidentSeverityCategory": "Severity", "AccidentType": "AccType", "AvgTemperature": "Temperature",
+                "AvgRainDur": "RainDur",
+                "AccidentInvolvingPedestrian": "Pedestrian", "AccidentInvolvingBicycle": "Bicycle",
+                "AccidentInvolvingMotorcycle": "Motorcycle", "AccidentLocation_CHLV95_E": "LocationE",
+                "AccidentLocation_CHLV95_N": "LocationN"}
+    dataframe.rename(columns=new_cols, inplace=True)
+    dataframe.loc[dataframe['RoadType'] == 9, 'RoadType'] = 5
+
+    return dataframe
+
+def save_tree(estimator, features, class_names):
+    """
+    Saves the random forest tree from classification
+    :param estimator: estimator
+    :param features: list of feature names
+    :param class_names: list of class names
+    """
+    fig = plt.figure(figsize=(21, 4), dpi=144)
+    plt.style.use('seaborn')
+    plot_tree(estimator, fontsize=7, feature_names=features, class_names=class_names, filled=True)
+    plt.savefig("../presentation/figures/forest_tree.png", bbox_inches='tight', pad_inches=0.1)

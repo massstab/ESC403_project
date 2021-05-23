@@ -186,6 +186,7 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
     if animation:
         Writer = matplotlib.animation.writers['ffmpeg']
         writer = Writer(fps=15, metadata=dict(artist='MarceloDave'), bitrate=2700)
+
         #set up KDE
         fig, ax = plt.subplots(figsize=(9, 10), dpi=144)
         if interpolate:
@@ -200,6 +201,7 @@ def visualize_kde(df, im_map, BBox, features, feature_number, feature_value, dat
             bunch_data_kde_new.append(bunch_data_kde[-1])
             bunch_data_kde = bunch_data_kde_new
             multiplots = (multiplots - 1) * interpol_nframes + 1
+
         anim = matplotlib.animation.FuncAnimation(fig=fig, func=__visualizer,
                          frames=multiplots, fargs=(ax, bunch_data_kde,
                          X, Y, levels, im_map, BBox, features, severity_number,
@@ -331,7 +333,7 @@ def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
 
     if visualize_sklearn:
         ax.imshow(im_map, extent=BBox, aspect='auto')
-        ax.contourf(X, Y, Z, levels=levels, cmap='hot', alpha=0.5,  antialiased=True)
+        ax.contourf(X, Y, Z, levels=levels, cmap="afmhot_r", alpha=0.5,  antialiased=True)
         print(f'Image#: {i}')
         if visualize_real_data:
             ax.scatter(longitude, latitude, s=sizes)

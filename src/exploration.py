@@ -61,17 +61,29 @@ if correlations:
     # df_0 = df.query('AccidentType <= 7 and AccidentType >= 5 and AvgTemperature > 15')
 
     # df = df[(df['RoadType'] != 2) & (df['RoadType'] != 3)]
-    df = df[(df['AccidentType'] == 0)]
+    df = df[(df['AccidentSeverityCategory'] == 1)]
     # df.dropna('AccidentType', inplace=True)
 
-    def find_corr(featurex, featurey, category):
-        fig, ax = plt.subplots()
-        scatter = ax.scatter(df[featurex], df[featurey], c=df[category], s=2, cmap='tab10')
-        legend = ax.legend(*scatter.legend_elements(), loc="upper right", title=category)
-        ax.add_artist(legend)
-        ax.set_xlabel(featurex)
-        ax.set_ylabel(featurey)
-        sns.pairplot(df, diag_kind="kde")
+    def find_corr(featurex, featurey, category, featurez=None, axes3d=False):
+        if axes3d:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            scatter = ax.scatter(df[featurex], df[featurey], df[featurez], c=df[category], s=2, cmap='tab10')
+            legend = ax.legend(*scatter.legend_elements(), loc="upper right", title=category)
+            ax.add_artist(legend)
+            ax.set_xlabel(featurex)
+            ax.set_ylabel(featurey)
+            ax.set_zlabel(featurez)
+            # sns.pairplot(df, diag_kind="kde")
+        else:
+            fig, ax = plt.subplots()
+            scatter = ax.scatter(df[featurex], df[featurey], c=df[category], s=2, cmap='tab10')
+            legend = ax.legend(*scatter.legend_elements(), loc="upper right", title=category)
+            ax.add_artist(legend)
+            ax.set_xlabel(featurex)
+            ax.set_ylabel(featurey)
+            # sns.pairplot(df, diag_kind="kde")
         plt.show()
 
-    find_corr('SumCars', 'AvgRainDur', 'RoadType')
+
+    find_corr('AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType', 'RoadType', axes3d=True)

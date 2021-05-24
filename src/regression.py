@@ -141,7 +141,7 @@ if __name__ == "__main__":
         # df = df[(df['AccidentSeverityCategory'] == 2)]
         z_axis = "Date, arbitrary label"
         y_axis = 'SumAccidents'
-        x_axis = 'AvgRainDur'
+        x_axis = 'AvgTemperature'
 
         # df = df[(df['AccidentSeverityCategory'] == 1)]
         df_sum = sum_per_time(df, per_hour=item[0], per_day=item[1], per_month=item[2],
@@ -173,8 +173,8 @@ if __name__ == "__main__":
         XX, YY = np.meshgrid(X, Y)
         ZZ = a0 + a1 * XX + a2 * YY
         ax.plot_surface(XX, YY, ZZ, alpha=0.3, color='red')
-        ax.set_xlabel(x_axis)
-        ax.set_ylabel(y_axis)
-        ax.set_zlabel(z_axis)
+        ax.set_xlabel(x_axis + " [C]")
+        ax.set_ylabel(y_axis +" [a.u.]")
+        ax.set_zlabel(z_axis +" [a.u.]")
 
         plt.show()

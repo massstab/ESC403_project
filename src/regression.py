@@ -40,7 +40,28 @@ def last_day_of_month(any_day):
     return next_month - datetime.timedelta(days=next_month.day)
 
 
-def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=True):
+def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=True,
+                 x_axis='AvgTemperature', y_axis='SumAccidents'):
+    """ Calculates the sum of accidents within the given time interval.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        DataFarme.
+    per_hour : boolean, optional
+        If True all accidents occuring during the given destinct hours will be
+        summed. The default is False. (description wonky)
+    per_day : boolean, optional
+        If True all accidents occuring during the given destinct day will be
+        summed. The default is False. (description wonky)
+    per_year : boolean, optional
+        If True all accidents occuring during the given destinct year will be
+        summed. The default is False. (description wonky)
+
+    Return
+    ------
+    DataFrame with summed accidents.
+    """
 
     df['Date'] = pd.to_datetime(df['Date'])
 
@@ -48,35 +69,35 @@ def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=Tr
         unique_date_temp = df.groupby(['Date'])
         unique_date = unique_date_temp['Date'].count().to_frame()
 
-        df_new = df.drop_duplicates(subset=['Date', 'AvgTemperature'])
-        unique_date.insert(1, 'AvgTemperature', df_new['AvgTemperature'].to_numpy())
+        df_new = df.drop_duplicates(subset=['Date', x_axis])
+        unique_date.insert(1, x_axis, df_new[x_axis].to_numpy())
         unique_date.rename(columns={'Date': 'SumAccidents'}, inplace=True)
 
     if per_day:
-        df_new = df[['Date', 'AvgTemperature']].copy()
+        df_new = df[['Date', x_axis]].copy()
         df_new.insert(2, 'Day', df_new['Date'].dt.day.to_numpy())
         df_new.insert(3, 'Month', df_new['Date'].dt.month.to_numpy())
         df_new.insert(4, 'Year', df_new['Date'].dt.year.to_numpy())
 
         unique_date_temp = df_new.groupby(['Year', 'Month', 'Day'])
-        unique_date = unique_date_temp['AvgTemperature'].count().to_frame()
-        unique_date.rename(columns={'AvgTemperature': 'SumAccidents'}, inplace=True)
+        unique_date = unique_date_temp[x_axis].count().to_frame()
+        unique_date.rename(columns={x_axis: 'SumAccidents'}, inplace=True)
 
         unique_date.reset_index(level=['Year', 'Month', 'Day'], inplace=True)
         unique_date['Date'] = pd.to_datetime(unique_date[['Day','Month','Year']])
         unique_date.drop(['Day','Month','Year'], axis = 1, inplace=True)
-        unique_date.insert(2, 'AvgTemperature', unique_date_temp['AvgTemperature'].mean().to_numpy())
+        unique_date.insert(2, x_axis, unique_date_temp[x_axis].mean().to_numpy())
 
 
     if per_month:
-        df_new = df[['Date', 'AvgTemperature']].copy()
+        df_new = df[['Date', x_axis]].copy()
         df_new.insert(2, 'Day', df_new['Date'].dt.day.to_numpy())
         df_new.insert(3, 'Month', df_new['Date'].dt.month.to_numpy())
         df_new.insert(4, 'Year', df_new['Date'].dt.year.to_numpy())
 
         unique_date_temp = df_new.groupby(['Year', 'Month'])
-        unique_date = unique_date_temp['AvgTemperature'].count().to_frame()
-        unique_date.rename(columns={'AvgTemperature': 'SumAccidents'}, inplace=True)
+        unique_date = unique_date_temp[x_axis].count().to_frame()
+        unique_date.rename(columns={x_axis: 'SumAccidents'}, inplace=True)
 
         unique_date.reset_index(level=['Year', 'Month'], inplace=True)
         lst_last_day_month = [last_day_of_month(datetime.date(year, unique_date['Month'].to_numpy()[i], 1)).day for i, year in enumerate(unique_date['Year'].to_numpy())]
@@ -86,18 +107,18 @@ def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=Tr
 
         unique_date.drop(['Year','Month'], axis = 1, inplace=True)
         unique_date.insert(1, 'Date', dates_temp['Date'].to_numpy())
-        unique_date.insert(2, 'AvgTemperature', unique_date_temp['AvgTemperature'].mean().to_numpy())
+        unique_date.insert(2, x_axis, unique_date_temp[x_axis].mean().to_numpy())
 
 
     if per_year:
-        df_new = df[['Date', 'AvgTemperature']].copy()
+        df_new = df[['Date', x_axis]].copy()
         df_new.insert(2, 'Day', df_new['Date'].dt.day.to_numpy())
         df_new.insert(3, 'Month', df_new['Date'].dt.month.to_numpy())
         df_new.insert(4, 'Year', df_new['Date'].dt.year.to_numpy())
 
         unique_date_temp = df_new.groupby(['Year'])
-        unique_date = unique_date_temp['AvgTemperature'].count().to_frame()
-        unique_date.rename(columns={'AvgTemperature': 'SumAccidents'}, inplace=True)
+        unique_date = unique_date_temp[x_axis].count().to_frame()
+        unique_date.rename(columns={x_axis: 'SumAccidents'}, inplace=True)
 
         unique_date.reset_index(level=['Year'], inplace=True)
         new = dict(month=12, day=31)
@@ -106,7 +127,7 @@ def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=Tr
 
         unique_date.drop(['Year'], axis = 1, inplace=True)
         unique_date.insert(1, 'Date', dates_temp['Date'].to_numpy())
-        unique_date.insert(2, 'AvgTemperature', unique_date_temp['AvgTemperature'].mean().to_numpy())
+        unique_date.insert(2, x_axis, unique_date_temp[x_axis].mean().to_numpy())
 
     return unique_date
 
@@ -114,19 +135,24 @@ def sum_per_time(df, per_hour=False, per_day=False, per_month=False, per_year=Tr
 
 if __name__ == "__main__":
 
-    lst = [[True, False, False, False],
-           [False, True, False, False],
-           [False, False, True, False],
-           [False, False, False, True]]
+    lst = np.identity(4)
 
     for item in lst:
-        df_sum = sum_per_time(df, per_hour=item[0], per_day=item[1], per_month=item[2], per_year=item[3])
-        x = list(range(len(df_sum.index.values)))
-        y = df_sum["SumAccidents"].values
-        z = df_sum["AvgTemperature"].values
+        # df = df[(df['AccidentSeverityCategory'] == 2)]
+        z_axis = "Date, arbitrary label"
+        y_axis = 'SumAccidents'
+        x_axis = 'AvgRainDur'
+
+        # df = df[(df['AccidentSeverityCategory'] == 1)]
+        df_sum = sum_per_time(df, per_hour=item[0], per_day=item[1], per_month=item[2],
+                              per_year=item[3], x_axis=x_axis, y_axis=y_axis)
+        z = list(range(len(df_sum.index.values)))
+        x = df_sum[x_axis].values
+        y = df_sum[y_axis].values
+        print(df_sum.keys())
 
         # collect them in a pandas dfframe
-        df_sum = pd.DataFrame({'Date': x, 'SumAccidents': y, 'AvgTemperature': z})
+        df_sum = pd.DataFrame({'Date': z, x_axis: x, y_axis: y})
 
         # linear regression fit111
         reg = sm.ols(formula='z ~ x + y', data=df_sum).fit()
@@ -146,12 +172,9 @@ if __name__ == "__main__":
         Y = np.linspace(min(y), max(y), 100)
         XX, YY = np.meshgrid(X, Y)
         ZZ = a0 + a1 * XX + a2 * YY
-        ax.plot_surface(XX, YY, ZZ, alpha=0.3, color='orange')
+        ax.plot_surface(XX, YY, ZZ, alpha=0.3, color='red')
+        ax.set_xlabel(x_axis)
+        ax.set_ylabel(y_axis)
+        ax.set_zlabel(z_axis)
 
         plt.show()
-
-
-
-
-
-

@@ -7,6 +7,7 @@ according to this tutorial: https://www.tensorflow.org/tutorials/structured_data
 
 import logging
 import os
+
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Silence tensorflow a bit
 import tensorflow as tf
@@ -30,14 +31,14 @@ pd.set_option('display.width', 200)
 
 dataframe = prepare_data_classification(dataframe)
 
-sequential_model = False
+sequential_model = True
 decision_tree = False
-random_forest = True
+random_forest = False
 
 if sequential_model:
     print('----------starting sequential model classification----------')
     # all features: ['AccType', 'Severity', 'Pedestrian', 'Bicycle', 'Motorcycle', 'RoadType', 'LocationE', 'LocationN', 'Temperature', 'RainDur']
-    features = ['AccType', 'Severity', 'Pedestrian', 'Bicycle']
+    features = ['AccType','Temperature', 'RainDur']
     target = 'RoadType'
     print('Features: ', features)
     print('Target: ', target)
@@ -72,7 +73,6 @@ if sequential_model:
     #     print('A batch of targets:', label_batch)
 
     num_units = dataframe[target].nunique()
-    print(num_units)
     model = tf.keras.Sequential([
         feature_layer,
         layers.Dense(128, activation='relu'),
@@ -94,11 +94,12 @@ if sequential_model:
 if decision_tree:
     print('\n----------starting decision tree classification----------')
     # all features: ['AccType', 'Severity', 'Pedestrian', 'Bicycle', 'Motorcycle', 'RoadType','LocationE', 'LocationN', 'Temperature', 'RainDur']
-    features = ['Severity', 'AccType', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Temperature', 'RainDur']
+    features = ['Severity', 'AccType', 'RoadType', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Temperature', 'RainDur']
     # TODO: Adapt class_names for different target values
     class_names = ['Accident with fatalities', 'Accident with severe injuries',
                    'Accident with light injuries', 'Accident with property damage']
     target = 'RoadType'
+    features.remove(target)
     X = dataframe[features]
     y = dataframe[target]
     print('Features: ', features)
@@ -127,19 +128,22 @@ if decision_tree:
 if random_forest:
     print('\n----------starting random forest classification----------')
     # all features: ['AccType', 'Severity', 'Pedestrian', 'Bicycle', 'Motorcycle', 'RoadType','LocationE', 'LocationN', 'Temperature', 'RainDur']
-    features = ['Severity', 'AccType', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Temperature', 'RainDur']
+    features = ['Severity', 'AccType', 'RoadType', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Temperature', 'RainDur']
     # TODO: Adapt class_names for different target values
     class_names = ['Accident with fatalities', 'Accident with severe injuries',
                    'Accident with light injuries', 'Accident with property damage']
     target = 'RoadType'
+    features.remove(target)
     X = dataframe[features]
-    y = dataframe['Severity']
+    y = dataframe[target]
     print('Features: ', features)
     print('Target: ', target)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    rfc = RandomForestClassifier(random_state=1, max_depth=None)
+    depth = None
+
+    rfc = RandomForestClassifier(random_state=1, max_depth=depth)
     # rfc = RandomForestClassifier(bootstrap=True, ccp_alpha=0.0,
     #                              max_depth=None, max_features='auto', max_leaf_nodes=None,
     #                              max_samples=None, min_impurity_decrease=0.0,
@@ -149,8 +153,7 @@ if random_forest:
     #                              random_state=1, verbose=0, warm_start=False)
     rfc.fit(X_train, y_train)
     est = rfc.estimators_[3]
-    save_tree(est, features, class_names)
-
+    # save_tree(est, features, class_names, depth, filetype='png')
 
     rfc_y_predict = rfc.predict(X_test)
     print('Accuracy: ', accuracy_score(y_test, rfc_y_predict))

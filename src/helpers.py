@@ -1,5 +1,6 @@
 import logging
 import os
+
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Silence tensorflow a bit
 import tensorflow as tf
@@ -7,7 +8,6 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
-
 
 
 def lv95_latlong(E, N):
@@ -114,7 +114,8 @@ def prepare_data_classification(dataframe, drop_some=True):
 
     return dataframe
 
-def save_tree(estimator, features, class_names):
+
+def save_tree(estimator, features, class_names, depth, filetype='png'):
     """
     Saves the random forest tree from classification
     :param estimator: estimator
@@ -124,4 +125,5 @@ def save_tree(estimator, features, class_names):
     fig = plt.figure(figsize=(21, 4), dpi=144)
     plt.style.use('seaborn')
     plot_tree(estimator, fontsize=7, feature_names=features, class_names=class_names, filled=True)
-    plt.savefig("../presentation/figures/forest_tree.svg", bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(f"../presentation/figures/forest_tree_depth{depth}.{filetype}", bbox_inches='tight', pad_inches=0.1,
+                transparent=True)

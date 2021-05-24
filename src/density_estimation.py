@@ -27,7 +27,7 @@ import matplotlib as mpl
 mpl.rcParams['animation.ffmpeg_path'] = r'C:\\FFmpeg\\bin\\ffmpeg.exe'
 
 # =============================================================================
-# df = df[:10000]
+# df = df[:1000]
 
 features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle','AccidentInvolvingMotorcycle','RoadType',
@@ -274,6 +274,7 @@ def __data_provider(df, features, feature_number, feature_value, x_coord_number=
         titles = [title]
         x_coord = [data[features[x_coord_number]].values.reshape((-1, 1))]
         y_coord = [data[features[y_coord_number]].values.reshape((-1, 1))]
+        data = [data]
 
     elif day_time[0]:
         multiplots = day_time[1]
@@ -481,7 +482,7 @@ def __kde_estimator(i, bunch_data_init, X, Y, visualize_seaborn, visualize_scipy
     if visualize_seaborn:
         # set dummy data
         Z = 0
-        z_min_max = 0
+        z_min_max = (0, 0)
 
     if visualize_scipy:
         kernel = stats.gaussian_kde([longitude[:, 0], latitude[:,0]], bw_method="silverman")
@@ -528,11 +529,15 @@ def __visualizer(i, ax, bunch_data_kde, X, Y, levels, im_map, BBox,
         sizes = list(np.ones(len(longitude)))
 
     if visualize_seaborn:
-        sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
-        # (sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6))
+        sns.set_style("whitegrid")
+        h = sns.jointplot(longitude[:,0], latitude[:,0], kind="kde", fill=True)
+        # h = sns.jointplot(longitude[:,0], latitude[:,0], color="k", marker='.').plot_joint(sns.kdeplot, n_levels=20, shade=True, alpha=0.6)
+        h.set_axis_labels('Longitude [°]', 'Latitude [°]', fontsize=16)
+        plt.suptitle(title)
 
 
     if visualize_scipy:
+        ax.imshow(im_map, extent=BBox, aspect='auto')
         co = ax.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Blues, alpha=0.5)
         if visualize_real_data:
             ax.scatter(longitude, latitude, color='k', s=sizes, alpha=0.5)
@@ -617,14 +622,14 @@ if __name__ == "__main__":
                   "KDE: accidents involving pedestrian(s), 2011-2020",
                   "KDE: accidents involving animal(s), 2011-2020"]
 
-    whole_data = False
+    whole_data = True
     day_time = (False, 4)
     seasons = False
     temperature = (False, 3)
     rain_dur = (False, 15)
     sumped = (False, 200)
     sumbyc = (False, 69)
-    sumcars = (True, 100)
+    sumcars = (False, 100)
 
     animate_daytime = False
     interpol_nframes = 15
@@ -634,27 +639,27 @@ if __name__ == "__main__":
     if whole_data:
         #involvements
         visualize_kde(df, map00, BBox, features, 3, 1, title=titles_invo[0])
-        visualize_kde(df, map00, BBox, features, 4, 1, title=titles_invo[1])
-        visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2])
+        # visualize_kde(df, map00, BBox, features, 4, 1, title=titles_invo[1])
+        # visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2])
 
-        # road type
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5])
+        # # road type
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5])
 
-        # accident type
-        visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3])
-        # visualize_kde(df, map00, BBox, features, 2, l_acct[4], title=titles_acct[4]) # not enough data points for this estimation
-        # visualize_kde(df, map00, BBox, features, 2, l_acct[5], title=titles_acct[5]) # not enough data points for this estimation
-        # visualize_kde(df, map00, BBox, features, 2, l_acct[6], title=titles_acct[6]) # not enough data points for this estimation
-        # visualize_kde(df, map00, BBox, features, 2, l_acct[7], title=titles_acct[7]) # not enough data points for this estimation
-        # visualize_kde(df, map00, BBox, features, 2, l_acct[8], title=titles_acct[8]) # not enough data points for this estimation
+        # # accident type
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3])
+        # # visualize_kde(df, map00, BBox, features, 2, l_acct[4], title=titles_acct[4]) # not enough data points for this estimation
+        # # visualize_kde(df, map00, BBox, features, 2, l_acct[5], title=titles_acct[5]) # not enough data points for this estimation
+        # # visualize_kde(df, map00, BBox, features, 2, l_acct[6], title=titles_acct[6]) # not enough data points for this estimation
+        # # visualize_kde(df, map00, BBox, features, 2, l_acct[7], title=titles_acct[7]) # not enough data points for this estimation
+        # # visualize_kde(df, map00, BBox, features, 2, l_acct[8], title=titles_acct[8]) # not enough data points for this estimation
 
 # =============================================================================
     if day_time[0]:

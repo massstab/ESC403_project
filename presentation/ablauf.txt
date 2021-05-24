@@ -1,0 +1,15 @@
+Aufgabenstellung
+
+Datenherkunft: Labels erklären, welche verschiedene datensets
+
+Tidy: Was gedropt, Wie meteodaten verarbeitet (durchschnitt von stunde), wie zählungsdaten verarbeitet (radius/datum, bild mit radius(O)), datetime als index, Alles nummerisch gemacht. Messi Daten zeigen mit scroll pp.(O) -> Sauberes datenset.
+
+Exploration: Plot SumCars/bike/ped mit Accidents weekday oder month. Regression. KDE. Pairplots. Seaborn plots KDE/Scipykde.
+
+Classification (Dave)
+
+KDE animation (Marcelo)
+
+questions?
+
+

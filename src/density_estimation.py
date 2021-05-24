@@ -298,20 +298,22 @@ def __data_provider(df, features, feature_number, feature_value, x_coord_number=
             y_coord.append(unique_data_temp[features[y_coord_number]].values.reshape((-1, 1)))
 
     elif seasons:
-        multiplots = 4
+        multiplots = 11
         data[features[date_number]] = pd.to_datetime(data[features[date_number]])
         df_new = data[[features[date_number], features[severity_number], features[x_coord_number], features[y_coord_number]]].copy()
         df_new.insert(3, 'Month', df_new['Date'].dt.month.to_numpy())
 
-        season_interval = np.array([1,4,7,10,12]) # seasons shifted by one month
-        df_new['DividedSeason_category'] = pd.cut(df_new['Month'], season_interval, labels=range(4))
+        season_interval = np.linspace(1, 12, 12) # seasons shifted by one month
+        df_new['DividedSeason_category'] = pd.cut(df_new['Month'], season_interval, labels=range(11))
 
         data = []
         x_coord = []
         y_coord = []
-        seasons = ["Month 1-3", "Month 4-6", "Month 7-9", "Month 10-12"]
+        seasons = ["Month 0-1", "Month 1-2", "Month 2-3", "Month 3-4", "Month 4-5",
+                   "Month 5-6", "Month 6-7", "Month 7-8", "Month 8-9"
+                   "Month 9-10", "Month 10-11", "Month 11-12"]
         titles = [f"{title}. {item} " for item in seasons]
-        for i in range(4):
+        for i in range(11):
             unique_data_temp = df_new.groupby(['DividedSeason_category']).get_group(i)
             data.append(unique_data_temp[[features[date_number], features[severity_number], features[x_coord_number], features[y_coord_number]]])
             x_coord.append(unique_data_temp[features[x_coord_number]].values.reshape((-1, 1)))
@@ -622,9 +624,9 @@ if __name__ == "__main__":
                   "KDE: accidents involving pedestrian(s), 2011-2020",
                   "KDE: accidents involving animal(s), 2011-2020"]
 
-    whole_data = True
+    whole_data = False
     day_time = (False, 4)
-    seasons = False
+    seasons = True
     temperature = (False, 3)
     rain_dur = (False, 15)
     sumped = (False, 200)
@@ -736,49 +738,49 @@ if __name__ == "__main__":
 # =============================================================================
 
     if seasons:
-        visualize_kde(df, map00, BBox, features, 3, 1, title=titles_invo[0], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 3, 1, title=titles_invo[0], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
         visualize_kde(df, map00, BBox, features, 4, 1, title=titles_invo[1], whole_data=False,
                         seasons=True, animation=True, visualize_real_data=False,
                         interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2], whole_data=False,
-                        seasons=True, animation=True, visualize_real_data=False,
-                        interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2], whole_data=False,
+        #                 seasons=True, animation=True, visualize_real_data=False,
+        #                 interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
 
-        # road type
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4], whole_data=False,
+        # # road type
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0], whole_data=False,
         #               seasons=True, animation=True, visualize_real_data=False,
         #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4], whole_data=False,
+        # #               seasons=True, animation=True, visualize_real_data=False,
+        # #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
 
-        #accident type
-        visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
-        visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3], whole_data=False,
-                      seasons=True, animation=True, visualize_real_data=False,
-                      interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # #accident type
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3], whole_data=False,
+        #               seasons=True, animation=True, visualize_real_data=False,
+        #               interpolate=True, interpol_nframes=interpol_nframes, animation_save_dir=animation_save_dir)
 # =============================================================================
 
     if temperature[0]:

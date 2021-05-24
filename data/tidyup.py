@@ -195,10 +195,6 @@ def __helper_velo_fuss(lst1, lst2):
             return 0.5 * (sum(red1 + red2) + red1[-1]*len(red1)*(len(red1) < 4) + red2[-1]*len(red2)*(len(red2) < 4))
 
 
-def auto_prep_to_pickel(df, file_name, directory):
-    df.to_pickle(f"{directory}/{file_name}.pickle")
-
-
 # this probably takes quiet a long time to be executed
 def associate_coord_to_accident_coord(radius, df1, df2):
     """
@@ -289,7 +285,7 @@ def associate_coord_to_accident_coord(radius, df1, df2):
     return new_df
 
 
-# sorry lazy copy of the function before for car count data
+# sorry lazy copy of the function before; (for car count data=
 def associate_coord_to_accident_coord_cars(radius, df1, df2):
     """
     Alocates the nearest location with respect to the locations in df1, if the

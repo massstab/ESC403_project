@@ -603,7 +603,7 @@ if __name__ == "__main__":
     day_time = (False, 4)
     seasons = False
     temperature = (False, 5)
-    rain_dur = (True, 1)
+    rain_dur = (False, 1)
     sumped = (False, 100)
     sumbyc = (False, 269)
     sumcars = (False, 100)
@@ -613,28 +613,28 @@ if __name__ == "__main__":
 
     if whole_data:
         #involvements
-        visualize_kde(df, map00, BBox, features, 3, 1, title=titles_invo[0])
-        visualize_kde(df, map00, BBox, features, 4, 1, title=titles_invo[1])
-        visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2])
+        visualize_kde(df, map00, BBox, features, 3, 1, title=titles_invo[0], visualize_seaborn=True)
+        # visualize_kde(df, map00, BBox, features, 4, 1, title=titles_invo[1])
+        # visualize_kde(df, map00, BBox, features, 5, 1, title=titles_invo[2])
 
         # road type
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4])
-        visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[0], title=titles_on_roadt[0])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[1], title=titles_on_roadt[1])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[2], title=titles_on_roadt[2])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[3], title=titles_on_roadt[3])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[4], title=titles_on_roadt[4])
+        # visualize_kde(df, map00, BBox, features, 6, lst_on_roadt[5], title=titles_on_roadt[5])
 
         # accident type
-        visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3])
-        visualize_kde(df, map00, BBox, features, 2, l_acct[4], title=titles_acct[4]) # not enough data points for this estimation
-        visualize_kde(df, map00, BBox, features, 2, l_acct[5], title=titles_acct[5]) # not enough data points for this estimation
-        visualize_kde(df, map00, BBox, features, 2, l_acct[6], title=titles_acct[6]) # not enough data points for this estimation
-        visualize_kde(df, map00, BBox, features, 2, l_acct[7], title=titles_acct[7]) # not enough data points for this estimation
-        visualize_kde(df, map00, BBox, features, 2, l_acct[8], title=titles_acct[8]) # not enough data points for this estimation
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[0], title=titles_acct[0])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[1], title=titles_acct[1])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[2], title=titles_acct[2])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[3], title=titles_acct[3])
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[4], title=titles_acct[4]) # not enough data points for this estimation
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[5], title=titles_acct[5]) # not enough data points for this estimation
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[6], title=titles_acct[6]) # not enough data points for this estimation
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[7], title=titles_acct[7]) # not enough data points for this estimation
+        # visualize_kde(df, map00, BBox, features, 2, l_acct[8], title=titles_acct[8]) # not enough data points for this estimation
 
     if day_time[0]:
         # involvements

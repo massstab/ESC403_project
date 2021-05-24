@@ -30,8 +30,8 @@ pd.set_option('display.width', 200)
 
 dataframe = prepare_data_classification(dataframe)
 
-sequential_model = True
-decision_tree = True
+sequential_model = False
+decision_tree = False
 random_forest = True
 
 if sequential_model:
@@ -139,7 +139,7 @@ if random_forest:
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    rfc = RandomForestClassifier(random_state=1, max_depth=5)
+    rfc = RandomForestClassifier(random_state=1, max_depth=None)
     # rfc = RandomForestClassifier(bootstrap=True, ccp_alpha=0.0,
     #                              max_depth=None, max_features='auto', max_leaf_nodes=None,
     #                              max_samples=None, min_impurity_decrease=0.0,

@@ -1,5 +1,9 @@
-import numpy as np
+import logging
+import os
+logging.disable(logging.WARNING)
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Silence tensorflow a bit
 import tensorflow as tf
+import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
@@ -90,14 +94,15 @@ def ccolormap(name='Blues_custom'):
     # plt.show()
 
 
-def prepare_data_classification(dataframe):
+def prepare_data_classification(dataframe, drop_some=True):
     """
     Prepares the dataframe for classification tasks. Just making column names shorter.
     :param dataframe: The Accident data_all dataset
     :return: The edited dataframe
     """
-    dataframe = dataframe.drop(columns=['Date', 'SumBikerNumber',
-                                        'SumBikerNumber', 'SumCars', 'SumPedestrianNumber'])
+    if drop_some:
+        dataframe = dataframe.drop(columns=['Date', 'SumBikerNumber',
+                                            'SumBikerNumber', 'SumCars', 'SumPedestrianNumber'], errors='ignore')
     # Shorten feature names just for convenient output format
     new_cols = {"AccidentSeverityCategory": "Severity", "AccidentType": "AccType", "AvgTemperature": "Temperature",
                 "AvgRainDur": "RainDur",
@@ -119,4 +124,4 @@ def save_tree(estimator, features, class_names):
     fig = plt.figure(figsize=(21, 4), dpi=144)
     plt.style.use('seaborn')
     plot_tree(estimator, fontsize=7, feature_names=features, class_names=class_names, filled=True)
-    plt.savefig("../presentation/figures/forest_tree.png", bbox_inches='tight', pad_inches=0.1)
+    plt.savefig("../presentation/figures/forest_tree.svg", bbox_inches='tight', pad_inches=0.1)

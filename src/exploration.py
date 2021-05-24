@@ -2,10 +2,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-from sklearn import (linear_model, datasets, metrics, discriminant_analysis)
 from datasets import data_all as df
+from helpers import prepare_data_classification
 
 features = ['Date', 'AccidentType', 'AccidentSeverityCategory', 'AccidentInvolvingPedestrian',
             'AccidentInvolvingBicycle', 'AccidentInvolvingMotorcycle', 'RoadType',
@@ -15,12 +13,12 @@ features = ['Date', 'AccidentType', 'AccidentSeverityCategory', 'AccidentInvolvi
 df.index = pd.to_datetime(df.Date)
 df.drop(columns='Date', inplace=True)
 pd.options.display.max_columns = 100
-pd.options.display.max_rows = 100
-pd.set_option('display.width', 150)
+pd.set_option('display.width', 200)
 
 
 severity = False
-correlations = True
+correlations = False
+sb_pairplot = True
 
 
 # =============================================================================
@@ -61,7 +59,9 @@ if correlations:
     # df_0 = df.query('AccidentType <= 7 and AccidentType >= 5 and AvgTemperature > 15')
 
     # df = df[(df['RoadType'] != 2) & (df['RoadType'] != 3)]
-    df = df[(df['AccidentSeverityCategory'] == 1)]
+    # print(df.head(20))
+    # df = df[(df['AccidentSeverityCategory'] == 1)]
+    # print(df.info())
     # df.dropna('AccidentType', inplace=True)
 
     def find_corr(featurex, featurey, category, featurez=None, axes3d=False):
@@ -74,7 +74,6 @@ if correlations:
             ax.set_xlabel(featurex)
             ax.set_ylabel(featurey)
             ax.set_zlabel(featurez)
-            # sns.pairplot(df, diag_kind="kde")
         else:
             fig, ax = plt.subplots()
             scatter = ax.scatter(df[featurex], df[featurey], c=df[category], s=2, cmap='tab10')
@@ -82,8 +81,23 @@ if correlations:
             ax.add_artist(legend)
             ax.set_xlabel(featurex)
             ax.set_ylabel(featurey)
-            # sns.pairplot(df, diag_kind="kde")
         plt.show()
 
 
-    find_corr('AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType', 'RoadType', axes3d=True)
+    # find_corr('AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType', 'RoadType', axes3d=True)
+    # find_corr('AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType', 'RoadType')
+
+if sb_pairplot:
+    # df = df.sample(10000)
+    df = prepare_data_classification(df, drop_some=False)
+    df = df[df['RainDur'] <= 60]
+    features = ['SumBikerNumber', 'SumCars', 'SumPedestrianNumber']
+    df['weekday'] = df.index.day_name()
+    df = df.groupby('weekday')[features].sum()
+    print(df.head(20))
+    # target = 'Severity'
+    # num_units = df[target].nunique()
+    # pal = sns.color_palette(n_colors=num_units)
+    # pp = sns.pairplot(df, vars=features, hue=target, diag_kind="auto", aspect=1.44, palette=pal, kind='scatter', corner=False, plot_kws={'s': 20})
+    # plt.savefig(f'../presentation/figures/pairplot_{target}_2.jpg', dpi=90)
+    # plt.show()

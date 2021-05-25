@@ -17,12 +17,12 @@ df = data_all
 df_count_ped_bike = pd.read_pickle('../data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle')
 df_count_car = pd.read_csv('../data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv')
 
-map01 = imread("../data/Zürich_map/standard.png")
-map02 = imread("../data/Zürich_map/traffic.png")
-map03 = imread("../data/Zürich_map/human.png")
-map04 = imread("../data/Zürich_map/gis1.png")
+map01 = imread("../data/zurich_map/standard.png")
+map02 = imread("../data/zurich_map/traffic.png")
+map03 = imread("../data/zurich_map/human.png")
+map04 = imread("../data/zurich_map/gis1.png")
 
-map_calibration_angle = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
+map_calibration_angle = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/zurich_map
 # map_calibration_angle = gis_pixel((2682732, 12448192), 77000, 300)  # Need for the gis maps printed from https://maps.zh.ch/
 
 features = ['Date','AccidentType','AccidentSeverityCategory',
@@ -72,7 +72,7 @@ if display_plot_ped_bike:
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
     map_calibration_angle = map_calibration_angle
-    map01 = imread("../data/Zürich_map/map.png")
+    map01 = imread("../data/zurich_map/map.png")
 
     fig, ax = plt.subplots(figsize=(15, 12), dpi=80)
     ax.scatter(longitude, latitude, zorder=1, alpha=0.3, s=2, c="b")
@@ -91,7 +91,7 @@ if display_plot_car:
     # z = df_count_ped_bike[features[13]].values.reshape((-1, 1))
 
     longitude, latitude = lv95_latlong(x_coord, y_coord)
-    map01 = imread("../data/Zürich_map/map.png")
+    map01 = imread("../data/zurich_map/map.png")
 
 
     fig, ax = plt.subplots(figsize=(15, 12), dpi=80)

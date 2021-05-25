@@ -11,7 +11,7 @@ env
 /data/tidy_data/pre_tidy_fussgaenger_velo/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_cleaned.pickle
 /data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.csv
 /data/tidy_data/pre_tidy_auto/sid_dav_verkehrszaehlung_miv_OD2031_2012-2020.pickle
-/data/Zürich_map/map.pdf
+/data/zurich_map/map.pdf
 /out/
 .aux
 .out

@@ -88,7 +88,7 @@ if correlations:
     # find_corr('AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType', 'RoadType')
 
 if sb_pairplot:
-    # df = df.sample(10000)
+    df = df.sample(10000)
     df = prepare_data_classification(df, drop_some=False)
     df = df[df['RainDur'] <= 60]
     features = ['SumBikerNumber', 'SumCars', 'SumPedestrianNumber']

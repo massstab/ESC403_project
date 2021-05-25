@@ -12,4 +12,5 @@ KDE animation (Marcelo)
 
 questions?
 
-
+gelernt: Spaltennamen im Tidy kürzer
+todo: description of the data (PDF)

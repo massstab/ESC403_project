@@ -31,9 +31,9 @@ pd.set_option('display.width', 200)
 
 dataframe = prepare_data_classification(dataframe)
 
-sequential_model = True
+sequential_model = False
 decision_tree = False
-random_forest = False
+random_forest = True
 
 if sequential_model:
     print('----------starting sequential model classification----------')
@@ -80,9 +80,9 @@ if sequential_model:
         layers.Dropout(.3),
         layers.Dense(num_units, activation='softmax')
     ])
-
-    optimizer = optimizers.Adam(learning_rate=0.01)  # Defines the learning rate
-    model.compile(optimizer=optimizer, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+    optimizer = optimizers.Adam(learning_rate=0.01)
+    model.compile(optimizer=optimizer,
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                   metrics=['accuracy'])
 
     callbacks = [tf.keras.callbacks.EarlyStopping(
@@ -130,8 +130,10 @@ if random_forest:
     # all features: ['AccType', 'Severity', 'Pedestrian', 'Bicycle', 'Motorcycle', 'RoadType','LocationE', 'LocationN', 'Temperature', 'RainDur']
     features = ['Severity', 'AccType', 'RoadType', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Temperature', 'RainDur']
     # TODO: Adapt class_names for different target values
-    class_names = ['Accident with fatalities', 'Accident with severe injuries',
-                   'Accident with light injuries', 'Accident with property damage']
+    # class_names = ['Accident with fatalities', 'Accident with severe injuries',
+    #                'Accident with light injuries', 'Accident with property damage']
+    class_names = ['Motorway', 'Expressway', 'Principal road', 'Minor road', 'Motorway side installation', 'Other']
+
     target = 'RoadType'
     features.remove(target)
     X = dataframe[features]
@@ -141,7 +143,7 @@ if random_forest:
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    depth = None
+    depth = 3
 
     rfc = RandomForestClassifier(random_state=1, max_depth=depth)
     # rfc = RandomForestClassifier(bootstrap=True, ccp_alpha=0.0,
@@ -153,7 +155,7 @@ if random_forest:
     #                              random_state=1, verbose=0, warm_start=False)
     rfc.fit(X_train, y_train)
     est = rfc.estimators_[3]
-    # save_tree(est, features, class_names, depth, filetype='png')
+    save_tree(est, features, class_names, depth, filetype='png')
 
     rfc_y_predict = rfc.predict(X_test)
     print('Accuracy: ', accuracy_score(y_test, rfc_y_predict))

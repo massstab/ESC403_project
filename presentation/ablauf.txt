@@ -36,6 +36,16 @@ Folie 13: Schönes merge. Zeigen dass nans noch drinnen. Sagen nochmals dass kat
 
 Dave:
 Folie 14: Klar
-Folie 15: Pairplots for quick 'n' dirty exploration. Which classes for colors. No clusters.
+Folie 15: Pairplots for quick 'n' dirty exploration. Which classes for colors.
+Folie 16: The correlation would be more pedestrians -> more cars. But remember that there are only points when there was a accident.
+Folie 17: Class 4 is Accident with property damage.
+
+Marcelo:
+Folie 18:
+Folie 19:
+Folie 20:
+
+Dave:
+Folie 21:
 
 

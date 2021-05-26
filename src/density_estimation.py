@@ -34,12 +34,12 @@ features = ['Date','AccidentType','AccidentSeverityCategory','AccidentInvolvingP
             'AccidentLocation_CHLV95_E','AccidentLocation_CHLV95_N','AvgTemperature',
             'AvgRainDur','SumBikerNumber','SumPedestrianNumber', 'SumCars']
 
-map00 = imread("../data/Zürich_map/map.png")
-map01 = imread("../data/Zürich_map/standard.png")
-map02 = imread("../data/Zürich_map/traffic.png")
-map03 = imread("../data/Zürich_map/human.png")
+map00 = imread("../data/zurich_map/map.png")
+map01 = imread("../data/zurich_map/standard.png")
+map02 = imread("../data/zurich_map/traffic.png")
+map03 = imread("../data/zurich_map/human.png")
 
-BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/Zürich_map
+BBox = (8.4591, 8.6326, 47.3128, 47.4349)  # These coordinates fits the images in /data/zurich_map
 
 # =============================================================================
 # Display whole data st

@@ -18,7 +18,8 @@ pd.set_option('display.width', 200)
 
 severity = False
 correlations = False
-sb_pairplot = True
+sb_pairplot = False
+stations_barplot = True
 
 
 # =============================================================================
@@ -101,3 +102,8 @@ if sb_pairplot:
     # pp = sns.pairplot(df, vars=features, hue=target, diag_kind="auto", aspect=1.44, palette=pal, kind='scatter', corner=False, plot_kws={'s': 20})
     # plt.savefig(f'../presentation/figures/pairplot_{target}_2.jpg', dpi=90)
     # plt.show()
+
+if stations_barplot:
+    from datasets import data_m
+
+    print(data_m.head())

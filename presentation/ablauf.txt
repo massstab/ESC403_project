@@ -14,3 +14,28 @@ questions?
 
 gelernt: Spaltennamen im Tidy kürzer
 todo: description of the data (PDF)
+
+
+Ablauf:
+
+Marcelo:
+Folie 1-3: Marcelo Intro und allgemein was gemacht wurde
+
+Dave:
+Folie 4: Vorbereitung der Daten
+Folie 5: Spalten gelöscht, Sprachen, . Sagen dass im codebook beschreibung. Bild nur ausschnitt.
+Folie 6: Strings to integer
+Folie 7: To perform grouping on rows it was convienient to have a datetime object as index in the pandas frame. Nur Name des Tages gegeben -> finde tag im monat (4 möglichkeiten).
+Folie 8: Drop columns. Only date and value of temp and raindur are taken. We had to delete rows also. Average values over all stations. Not same number of stations over year (maybe barplot). 
+
+Marcelo:
+Folie 9: Sagt welche spalten wir warum behalten. Wollen untersuchen ob korrelation zwischen anzahl verkehr und unfälle
+Folie 10: Why nans where not dropped. Ordnung nach datum.
+Folie 11-12: 2 features gleichzeitig für 1 unfall. Wie radius gewählt.
+Folie 13: Schönes merge. Zeigen dass nans noch drinnen. Sagen nochmals dass kategroische in codebook. We come back to this on a later page.
+
+Dave:
+Folie 14: Klar
+Folie 15: Pairplots for quick 'n' dirty exploration. Which classes for colors. No clusters.
+
+

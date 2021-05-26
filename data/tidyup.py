@@ -3,6 +3,7 @@
 Created on Thu Apr 15 16:30:42 2021
 @author: marszpd, dtm
 """
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time
@@ -508,25 +509,37 @@ new_cols = {"AccidentType": "Type", "AccidentSeverityCategory": "SeverityCategor
                             "AccidentLocation_CHLV95_E": "Location_CHLV95_E",
                             "AccidentLocation_CHLV95_N": "Location_CHLV95_N"}
 
-data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
-data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
-data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
-data_merged.dropna(inplace=True)
+# data_accident_cleaned = pd.read_pickle("tidy_data/RoadTrafficAccidentLocations_cleaned.pickle")
+# data_meteo_cleaned = pd.read_pickle("tidy_data/ugz_ogd_meteo_h1_2011-2020_cleaned.pickle")
+# data_merged = pd.merge(data_accident_cleaned, data_meteo_cleaned, how='left', right_index=True, left_index=True)
+# data_merged.dropna(inplace=True)
 # data_merged.rename(columns=new_cols, inplace=True)
-data_merged.to_pickle("tidy_data/data_merged.pickle")
-data_merged.to_csv("tidy_data/data_merged.csv")
+# data_merged.to_pickle("tidy_data/data_merged.pickle")
+# data_merged.to_csv("tidy_data/data_merged.csv")
 
-data_velo_fussgang_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
-data_auto_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready.pickle")
+# data_velo_fussgang_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_fussgaenger_velo_merge_ready.pickle")
+# data_auto_cleaned = pd.read_pickle("tidy_data/2011-2020_verkehrszaehlungen_werte_auto_merge_ready.pickle")
 
-data_merged = pd.read_pickle("tidy_data/data_merged.pickle")
-data_merged = pd.merge(data_merged, data_velo_fussgang_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
-                            'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
-data_merged = pd.merge(data_merged, data_auto_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
-                            'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
-data_merged.to_pickle("tidy_data/data_merged.pickle")
-data_merged.to_csv("tidy_data/data_merged.csv")
-
-
-
+# data_merged = pd.read_pickle("tidy_data/data_merged.pickle")
+# data_merged = pd.merge(data_merged, data_velo_fussgang_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
+#                             'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
+# data_merged = pd.merge(data_merged, data_auto_cleaned, how='left', on=['Date', 'AccidentLocation_CHLV95_E',
+#                             'AccidentLocation_CHLV95_N'])  # The key of the datetime index is 'Date'!
+# data_merged.to_pickle("tidy_data/data_merged.pickle")
+# data_merged.to_csv("tidy_data/data_merged.csv")
 # =============================================================================
+# plot number of stations in meteo set over years
+# num_unique = {}
+# years = range(2011, 2021)
+# for y in years:
+#     df = pd.read_csv(f'raw_data/Verkehrszaehlungen_werte_fussgaenger/{y}_verkehrszaehlungen_werte_fussgaenger_velo.csv')
+#     num_unique[f'{y}'] = df['FK_STANDORT'].nunique()
+
+num_unique = {'2011': 11, '2012': 12, '2013': 23, '2014': 34, '2015': 49, '2016': 49, '2017': 56, '2018': 56, '2019': 65, '2020': 51}
+fig, ax = plt.subplots()
+ax.bar(num_unique.keys(), num_unique.values())
+ax.set_title('Number of counting locations in Zurich')
+ax.set_xlabel('year')
+ax.set_ylabel('counts')
+# plt.savefig('../presentation/figures/num_locations.svg')
+# plt.show()
